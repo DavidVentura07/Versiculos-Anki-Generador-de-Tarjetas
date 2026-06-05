@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a3d2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Versículos Anki</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cinzel:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forest:    #1a3d2b;
+  --deep:      #0f2419;
+  --mid:       #2d6a4f;
+  --sage:      #52b788;
+  --mint:      #95d5b2;
+  --pale:      #d8f3dc;
+  --cream:     #f8faf8;
+  --parchment: #f4f0e8;
+  --gold:      #c9a84c;
+  --gold-lt:   #e8d08a;
+  --ink:       #1c1c1e;
+  --muted:     #6b7c6e;
+  --border:    #dde8df;
+  --shadow:    rgba(15,36,25,0.15);
+  --radius:    14px;
+  --radius-sm: 8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--deep);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── FONDO TEXTURA ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(42,106,79,0.3) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(26,61,43,0.4) 0%, transparent 60%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 40px,
+      rgba(255,255,255,0.012) 40px,
+      rgba(255,255,255,0.012) 41px
+    );
+  pointer-events: none; z-index: 0;
+}
+
+/* ── HEADER ── */
+header {
+  position: relative; z-index: 10;
+  background: linear-gradient(180deg, var(--deep) 0%, rgba(15,36,25,0.95) 100%);
+  border-bottom: 1px solid rgba(149,213,178,0.15);
+  padding: 0 24px;
+}
+.header-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0;
+}
+.logo {
+  display: flex; align-items: center; gap: 14px;
+}
+.logo-icon {
+  width: 42px; height: 42px;
+  background: linear-gradient(135deg, var(--mid), var(--sage));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 2px 12px rgba(82,183,136,0.3);
+}
+.logo-text { line-height: 1.2; }
+.logo-title {
+  font-family: 'Cinzel', serif;
+  font-size: 16px; font-weight: 600;
+  color: var(--mint); letter-spacing: 1px;
+}
+.logo-sub {
+  font-size: 11px; color: var(--muted);
+  letter-spacing: 2px; text-transform: uppercase;
+}
+.header-actions { display: flex; gap: 8px; }
+.btn-header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: var(--radius-sm);
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.5px; cursor: pointer;
+  border: none; transition: all 0.2s;
+}
+.btn-import {
+  background: rgba(149,213,178,0.1);
+  color: var(--mint);
+  border: 1px solid rgba(149,213,178,0.25);
+}
+.btn-import:hover { background: rgba(149,213,178,0.18); }
+.btn-export-json {
+  background: rgba(201,168,76,0.1);
+  color: var(--gold-lt);
+  border: 1px solid rgba(201,168,76,0.25);
+}
+.btn-export-json:hover { background: rgba(201,168,76,0.18); }
+
+/* ── MAIN LAYOUT ── */
+main {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+  padding: 32px 24px 80px;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 28px;
+  align-items: start;
+}
+
+/* ── SECCIÓN IZQUIERDA ── */
+.left-col { display: flex; flex-direction: column; gap: 24px; }
+
+/* ── TABS ── */
+.tabs {
+  display: flex; gap: 2px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(149,213,178,0.12);
+  border-radius: var(--radius); padding: 4px;
+}
+.tab {
+  flex: 1; padding: 10px;
+  border: none; border-radius: 10px;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  color: var(--muted); background: transparent;
+  letter-spacing: 0.3px;
+}
+.tab.active {
+  background: var(--mid);
+  color: var(--pale);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.tab:not(.active):hover { color: var(--mint); background: rgba(149,213,178,0.08); }
+
+/* ── PANEL ── */
+.panel {
+  background: rgba(255,255,255,0.97);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 24px var(--shadow), 0 1px 0 rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+.panel-header {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--mid) 100%);
+  padding: 20px 24px;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 2px solid var(--gold);
+}
+.panel-header-icon { font-size: 20px; }
+.panel-header-title {
+  font-family: 'Cinzel', serif;
+  font-size: 14px; font-weight: 600;
+  color: var(--mint); letter-spacing: 1px;
+}
+.panel-header-sub { font-size: 11px; color: rgba(149,213,178,0.6); margin-top: 2px; }
+.panel-body { padding: 24px; }
+
+/* ── FORM ── */
+.form-grid { display: flex; flex-direction: column; gap: 18px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--muted);
+}
+.field input, .field textarea, .field select {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 14px; color: var(--ink);
+  background: var(--cream);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  width: 100%;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+  border-color: var(--sage);
+  box-shadow: 0 0 0 3px rgba(82,183,136,0.12);
+  background: #fff;
+}
+.field textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+.field .hint {
+  font-size: 11px; color: var(--muted);
+  font-style: italic; margin-top: 2px;
+}
+.field-full { grid-column: 1 / -1; }
+
+/* Campo cloze */
+.cloze-area { min-height: 110px; font-family: 'EB Garamond', serif; font-size: 15px; }
+.cloze-preview {
+  background: var(--parchment);
+  border: 1.5px solid rgba(201,168,76,0.3);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-family: 'EB Garamond', serif;
+  font-size: 14px; line-height: 1.7;
+  color: var(--forest); min-height: 60px;
+  margin-top: 4px;
+}
+.cloze-preview .blank {
+  display: inline-block;
+  background: var(--pale);
+  border: 2px solid var(--sage);
+  border-radius: 4px;
+  min-width: 60px; height: 22px;
+  vertical-align: middle;
+  margin: 0 2px;
+}
+.cloze-preview .revealed {
+  background: rgba(82,183,136,0.15);
+  border-bottom: 2px solid var(--sage);
+  color: var(--forest); font-weight: 700;
+  padding: 0 3px; border-radius: 3px;
+}
+
+/* ── BOTONES FORM ── */
+.form-actions { display: flex; gap: 10px; margin-top: 4px; }
+.btn-primary {
+  flex: 1; padding: 12px 20px;
+  background: linear-gradient(135deg, var(--mid) 0%, var(--sage) 100%);
+  color: #fff; border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; letter-spacing: 0.3px;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 2px 12px rgba(45,106,79,0.35);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(45,106,79,0.45); }
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary {
+  padding: 12px 18px;
+  background: transparent;
+  color: var(--muted); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--sage); color: var(--mid); }
+
+/* ── BATCH MODE ── */
+.batch-instructions {
+  background: var(--parchment);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 13px; color: #5a4a2a; line-height: 1.6;
+}
+.batch-instructions strong { color: #3a2a0a; display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.batch-textarea {
+  min-height: 200px !important;
+  font-family: 'Courier New', monospace !important;
+  font-size: 13px !important;
+  line-height: 1.8 !important;
+}
+.batch-result {
+  background: var(--cream); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px;
+  margin-top: 12px; display: none;
+}
+.batch-result.show { display: block; }
+.batch-result-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 8px; }
+.batch-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.batch-item:last-child { border-bottom: none; }
+.batch-ok { color: var(--mid); font-weight: 600; }
+.batch-err { color: #c0392b; }
+
+/* ── BIBLIOTECA ── */
+.library-controls {
+  display: flex; gap: 10px; margin-bottom: 16px; align-items: center;
+}
+.search-box {
+  flex: 1; padding: 9px 14px;
+  background: var(--cream); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'Source Sans 3', sans-serif; font-size: 13px;
+  outline: none; transition: border-color 0.2s;
+}
+.search-box:focus { border-color: var(--sage); }
+.library-count {
+  font-size: 12px; color: var(--muted);
+  white-space: nowrap; font-weight: 600;
+}
+.verse-list { display: flex; flex-direction: column; gap: 10px; }
+.verse-card {
+  background: var(--cream);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  transition: all 0.2s;
+  cursor: default;
+}
+.verse-card:hover { border-color: var(--sage); box-shadow: 0 2px 12px rgba(82,183,136,0.1); }
+.verse-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.verse-ref {
+  font-family: 'Cinzel', serif;
+  font-size: 13px; font-weight: 600; color: var(--forest);
+}
+.verse-book { font-size: 11px; color: var(--sage); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.verse-text-preview {
+  font-family: 'EB Garamond', serif;
+  font-size: 14px; color: #444;
+  line-height: 1.5; font-style: italic;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.verse-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.btn-icon {
+  width: 30px; height: 30px;
+  border: none; border-radius: 6px;
+  cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.btn-edit { background: rgba(82,183,136,0.1); color: var(--mid); }
+.btn-edit:hover { background: rgba(82,183,136,0.2); }
+.btn-delete { background: rgba(192,57,43,0.08); color: #c0392b; }
+.btn-delete:hover { background: rgba(192,57,43,0.15); }
+.empty-state {
+  text-align: center; padding: 48px 24px;
+  color: var(--muted);
+}
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+.empty-state p { font-size: 14px; }
+
+/* ── COLUMNA DERECHA ── */
+.right-col { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 24px; }
+
+/* ── EXPORT BOX ── */
+.export-box {
+  background: rgba(255,255,255,0.97);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 24px var(--shadow);
+  overflow: hidden;
+}
+.export-header {
+  background: linear-gradient(135deg, #3a2a0a 0%, #6b4c1a 100%);
+  padding: 18px 20px;
+  border-bottom: 2px solid var(--gold);
+}
+.export-header-title {
+  font-family: 'Cinzel', serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--gold-lt); letter-spacing: 1px;
+}
+.export-header-sub { font-size: 11px; color: rgba(232,208,138,0.6); margin-top: 2px; }
+.export-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.export-stat {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 12px;
+  background: var(--cream); border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.export-stat-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+.export-stat-val { font-size: 18px; font-weight: 700; color: var(--forest); font-family: 'Cinzel', serif; }
+.export-divider { height: 1px; background: var(--border); margin: 4px 0; }
+.btn-export {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, var(--forest) 0%, var(--mid) 100%);
+  color: var(--pale); border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; letter-spacing: 0.5px;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 2px 10px rgba(15,36,25,0.4);
+}
+.btn-export:hover { transform: translateY(-1px); filter: brightness(1.1); }
+.btn-export-outline {
+  width: 100%; padding: 11px;
+  background: transparent;
+  color: var(--muted); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-export-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ── TIPS BOX ── */
+.tips-box {
+  background: rgba(255,255,255,0.97);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 24px var(--shadow);
+  overflow: hidden;
+}
+.tips-header {
+  background: linear-gradient(135deg, var(--deep) 0%, var(--forest) 100%);
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(149,213,178,0.2);
+}
+.tips-header-title {
+  font-family: 'Cinzel', serif; font-size: 12px;
+  font-weight: 600; color: var(--mint); letter-spacing: 1px;
+}
+.tips-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+.tip {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 12px; color: #555; line-height: 1.5;
+}
+.tip-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+.tip code {
+  background: var(--pale); color: var(--mid);
+  padding: 1px 5px; border-radius: 3px;
+  font-size: 11px; font-family: 'Courier New', monospace;
+}
+
+/* ── MODAL EDITAR ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 100; display: none;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #fff; border-radius: var(--radius);
+  width: 100%; max-width: 600px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  overflow: hidden;
+  animation: modalIn 0.2s ease;
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.modal-header {
+  background: linear-gradient(135deg, var(--forest), var(--mid));
+  padding: 18px 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 2px solid var(--gold);
+}
+.modal-title {
+  font-family: 'Cinzel', serif; font-size: 14px;
+  font-weight: 600; color: var(--mint); letter-spacing: 1px;
+}
+.modal-close {
+  background: rgba(255,255,255,0.1); border: none;
+  color: rgba(255,255,255,0.7); width: 28px; height: 28px;
+  border-radius: 6px; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.modal-close:hover { background: rgba(255,255,255,0.2); color: #fff; }
+.modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.modal-actions { display: flex; gap: 10px; padding: 0 24px 24px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 28px; right: 28px;
+  background: var(--forest); color: var(--pale);
+  padding: 12px 20px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600;
+  border-left: 3px solid var(--sage);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  z-index: 200; transform: translateY(80px); opacity: 0;
+  transition: all 0.3s ease;
+  display: flex; align-items: center; gap: 8px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error { border-left-color: #e74c3c; }
+
+/* ── HIDDEN TABS ── */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(82,183,136,0.3); border-radius: 3px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 800px) {
+  main { grid-template-columns: 1fr; }
+  .right-col { position: static; }
+  .form-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">✝</div>
+      <div class="logo-text">
+        <div class="logo-title">Versículos Anki</div>
+        <div class="logo-sub">Generador de Tarjetas · RV 1960</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-header btn-import" onclick="triggerImport()">📂 Importar JSON</button>
+      <button class="btn-header btn-export-json" onclick="exportJSON()">💾 Exportar JSON</button>
+    </div>
+  </div>
+</header>
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+
+<!-- MAIN -->
+<main>
+
+  <!-- COLUMNA IZQUIERDA -->
+  <div class="left-col">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('agregar')">➕ Agregar versículo</button>
+      <button class="tab" onclick="switchTab('batch')">📋 Agregar varios</button>
+      <button class="tab" onclick="switchTab('biblioteca')">📖 Biblioteca</button>
+    </div>
+
+    <!-- TAB: AGREGAR UNO -->
+    <div id="tab-agregar" class="tab-content active">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-header-icon">✍️</span>
+          <div>
+            <div class="panel-header-title">Nuevo Versículo</div>
+            <div class="panel-header-sub">Completa los campos y guarda</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="form-row">
+              <div class="field">
+                <label>Referencia *</label>
+                <input type="text" id="inp-ref" placeholder="Juan 3:16" oninput="autoBook()">
+              </div>
+              <div class="field">
+                <label>Libro</label>
+                <input type="text" id="inp-libro" placeholder="Evangelio de Juan">
+                <span class="hint">Se detecta automáticamente</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Texto del versículo *</label>
+              <textarea id="inp-texto" class="cloze-area" placeholder="Escribe aquí el versículo completo..." oninput="syncCloze()"></textarea>
+            </div>
+            <div class="field">
+              <label>Cloze — palabra clave oculta *</label>
+              <textarea id="inp-cloze" class="cloze-area" placeholder="Copia el versículo y marca la palabra clave con {{c1::palabra}}" oninput="updateClozePreview()"></textarea>
+              <span class="hint">Ejemplo: "...ha dado a su &#123;&#123;c1::Hijo unigénito&#125;&#125;, para que..."</span>
+            </div>
+            <div class="field">
+              <label>Vista previa del cloze</label>
+              <div class="cloze-preview" id="cloze-preview-box">Escribe el cloze arriba para ver la vista previa...</div>
+            </div>
+            <div class="field">
+              <label>Tema / Etiqueta</label>
+              <input type="text" id="inp-tema" placeholder="Fe, Salvación, Oración...">
+            </div>
+            <div class="form-actions">
+              <button class="btn-secondary" onclick="clearForm()">Limpiar</button>
+              <button class="btn-primary" onclick="saveVerse()">✅ Guardar versículo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: BATCH -->
+    <div id="tab-batch" class="tab-content">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-header-icon">📋</span>
+          <div>
+            <div class="panel-header-title">Agregar Varios</div>
+            <div class="panel-header-sub">Pega múltiples versículos a la vez</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="batch-instructions">
+              <strong>📌 Formato requerido</strong>
+              Cada versículo en una línea con este formato:<br>
+              <code>Referencia | Libro | Texto completo | Cloze con {{c1::palabra}} | Tema</code><br><br>
+              Ejemplo:<br>
+              <code>Proverbios 3:5-6 | Libro de los Proverbios | Fíate de Jehová de todo tu corazón... | Fíate de Jehová de todo tu {{c1::corazón}}... | Fe</code><br><br>
+              El campo <strong>Tema</strong> es opcional. El <strong>Libro</strong> también puede dejarse vacío y se detecta automáticamente.
+            </div>
+            <div class="field">
+              <label>Versículos (uno por línea)</label>
+              <textarea id="batch-input" class="batch-textarea" placeholder="Proverbios 3:5-6 | Libro de los Proverbios | Fíate de Jehová..."></textarea>
+            </div>
+            <div class="form-actions">
+              <button class="btn-secondary" onclick="document.getElementById('batch-input').value=''">Limpiar</button>
+              <button class="btn-primary" onclick="processBatch()">✅ Procesar y guardar</button>
+            </div>
+            <div id="batch-result" class="batch-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: BIBLIOTECA -->
+    <div id="tab-biblioteca" class="tab-content">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-header-icon">📖</span>
+          <div>
+            <div class="panel-header-title">Biblioteca</div>
+            <div class="panel-header-sub">Todos tus versículos guardados</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="library-controls">
+            <input type="text" class="search-box" id="search-box" placeholder="Buscar por referencia o texto..." oninput="renderLibrary()">
+            <span class="library-count" id="lib-count">0 versículos</span>
+          </div>
+          <div class="verse-list" id="verse-list">
+            <div class="empty-state">
+              <div class="empty-icon">📜</div>
+              <p>Aún no hay versículos guardados</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /left-col -->
+
+  <!-- COLUMNA DERECHA -->
+  <div class="right-col">
+
+    <!-- EXPORTAR ANKI -->
+    <div class="export-box">
+      <div class="export-header">
+        <div class="export-header-title">📤 Exportar para Anki</div>
+        <div class="export-header-sub">Genera los 3 archivos .txt listos para importar</div>
+      </div>
+      <div class="export-body">
+        <div class="export-stat">
+          <span class="export-stat-label">Total versículos</span>
+          <span class="export-stat-val" id="stat-total">0</span>
+        </div>
+        <div class="export-stat">
+          <span class="export-stat-label">Tarjetas que se generarán</span>
+          <span class="export-stat-val" id="stat-cards">0</span>
+        </div>
+        <div class="export-divider"></div>
+        <button class="btn-export" onclick="exportTipoA()">📄 Tipo A — Referencia → Texto</button>
+        <button class="btn-export" onclick="exportTipoB()">📄 Tipo B — Texto → Referencia</button>
+        <button class="btn-export" onclick="exportTipoC()">📄 Tipo C — Cloze</button>
+        <div class="export-divider"></div>
+        <button class="btn-export-outline" onclick="exportAll()">⬇️ Exportar los 3 a la vez</button>
+      </div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="tips-box">
+      <div class="tips-header">
+        <div class="tips-header-title">💡 Cómo usar el Cloze</div>
+      </div>
+      <div class="tips-body">
+        <div class="tip">
+          <span class="tip-icon">1️⃣</span>
+          <span>Copia el versículo completo en el campo Cloze</span>
+        </div>
+        <div class="tip">
+          <span class="tip-icon">2️⃣</span>
+          <span>Elige la palabra clave más importante y rodéala con <code>{{c1::palabra}}</code></span>
+        </div>
+        <div class="tip">
+          <span class="tip-icon">3️⃣</span>
+          <span>La vista previa te muestra el hueco <span style="display:inline-block;background:#d8f3dc;border:1.5px solid #52b788;border-radius:3px;width:30px;height:14px;vertical-align:middle"></span> tal como aparecerá en Anki</span>
+        </div>
+        <div class="tip">
+          <span class="tip-icon">✅</span>
+          <span>No ocultes palabras obvias como "Dios" o "Jesús". Elige frases teológicamente significativas</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /right-col -->
+
+</main>
+
+<!-- MODAL EDITAR -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Editar Versículo</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="field">
+          <label>Referencia *</label>
+          <input type="text" id="edit-ref" oninput="autoBookEdit()">
+        </div>
+        <div class="field">
+          <label>Libro</label>
+          <input type="text" id="edit-libro">
+        </div>
+      </div>
+      <div class="field">
+        <label>Texto del versículo *</label>
+        <textarea id="edit-texto" style="min-height:80px"></textarea>
+      </div>
+      <div class="field">
+        <label>Cloze *</label>
+        <textarea id="edit-cloze" style="min-height:80px" oninput="updateEditClozePreview()"></textarea>
+      </div>
+      <div class="field">
+        <label>Vista previa</label>
+        <div class="cloze-preview" id="edit-cloze-preview">...</div>
+      </div>
+      <div class="field">
+        <label>Tema</label>
+        <input type="text" id="edit-tema">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" style="flex:1" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" style="flex:2" onclick="saveEdit()">💾 Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════
+// DATOS
+// ══════════════════════════════
+const STORAGE_KEY = 'versiculo_db';
+let db = loadDB();
+let editingId = null;
+
+function loadDB() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+function saveDB() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  updateStats();
+}
+
+// ══════════════════════════════
+// MAPA DE LIBROS
+// ══════════════════════════════
+const BOOK_MAP = {
+  'génesis':'Libro de Génesis','genesis':'Libro de Génesis','gn':'Libro de Génesis','gen':'Libro de Génesis',
+  'éxodo':'Libro de Éxodo','exodo':'Libro de Éxodo','ex':'Libro de Éxodo',
+  'levítico':'Libro de Levítico','levitico':'Libro de Levítico','lv':'Libro de Levítico',
+  'números':'Libro de Números','numeros':'Libro de Números','nm':'Libro de Números',
+  'deuteronomio':'Libro de Deuteronomio','deu':'Libro de Deuteronomio','dt':'Libro de Deuteronomio',
+  'josué':'Libro de Josué','josue':'Libro de Josué','jos':'Libro de Josué',
+  'jueces':'Libro de Jueces','jue':'Libro de Jueces',
+  'rut':'Libro de Rut','rt':'Libro de Rut',
+  '1 samuel':'1er Libro de Samuel','1sam':'1er Libro de Samuel','1s':'1er Libro de Samuel',
+  '2 samuel':'2do Libro de Samuel','2sam':'2do Libro de Samuel','2s':'2do Libro de Samuel',
+  '1 reyes':'1er Libro de Reyes','1re':'1er Libro de Reyes',
+  '2 reyes':'2do Libro de Reyes','2re':'2do Libro de Reyes',
+  '1 crónicas':'1er Libro de las Crónicas','1 cronicas':'1er Libro de las Crónicas','1cr':'1er Libro de las Crónicas',
+  '2 crónicas':'2do Libro de las Crónicas','2 cronicas':'2do Libro de las Crónicas','2cr':'2do Libro de las Crónicas',
+  'esdras':'Libro de Esdras','esd':'Libro de Esdras',
+  'nehemías':'Libro de Nehemías','nehemias':'Libro de Nehemías','neh':'Libro de Nehemías',
+  'ester':'Libro de Ester','est':'Libro de Ester',
+  'job':'Libro de Job',
+  'salmos':'Libro de los Salmos','sal':'Libro de los Salmos','sl':'Libro de los Salmos','ps':'Libro de los Salmos',
+  'proverbios':'Libro de los Proverbios','pro':'Libro de los Proverbios','prov':'Libro de los Proverbios','pr':'Libro de los Proverbios',
+  'eclesiastés':'Libro de Eclesiastés','eclesiastes':'Libro de Eclesiastés','ecl':'Libro de Eclesiastés','ec':'Libro de Eclesiastés',
+  'cantares':'Cantares de Salomón','cnt':'Cantares de Salomón',
+  'isaías':'Libro del Profeta Isaías','isaias':'Libro del Profeta Isaías','isa':'Libro del Profeta Isaías','is':'Libro del Profeta Isaías',
+  'jeremías':'Libro del Profeta Jeremías','jeremias':'Libro del Profeta Jeremías','jer':'Libro del Profeta Jeremías',
+  'lamentaciones':'Libro de Lamentaciones','lam':'Libro de Lamentaciones',
+  'ezequiel':'Libro del Profeta Ezequiel','eze':'Libro del Profeta Ezequiel','ez':'Libro del Profeta Ezequiel',
+  'daniel':'Libro del Profeta Daniel','dan':'Libro del Profeta Daniel','dn':'Libro del Profeta Daniel',
+  'oseas':'Libro del Profeta Oseas','os':'Libro del Profeta Oseas',
+  'joel':'Libro del Profeta Joel','jl':'Libro del Profeta Joel',
+  'amós':'Libro del Profeta Amós','amos':'Libro del Profeta Amós','am':'Libro del Profeta Amós',
+  'abdías':'Libro del Profeta Abdías','abdias':'Libro del Profeta Abdías','ab':'Libro del Profeta Abdías',
+  'jonás':'Libro del Profeta Jonás','jonas':'Libro del Profeta Jonás','jon':'Libro del Profeta Jonás',
+  'miqueas':'Libro del Profeta Miqueas','miq':'Libro del Profeta Miqueas','mi':'Libro del Profeta Miqueas',
+  'nahúm':'Libro del Profeta Nahúm','nahum':'Libro del Profeta Nahúm','nah':'Libro del Profeta Nahúm',
+  'habacuc':'Libro del Profeta Habacuc','hab':'Libro del Profeta Habacuc',
+  'sofonías':'Libro del Profeta Sofonías','sofonias':'Libro del Profeta Sofonías','sof':'Libro del Profeta Sofonías',
+  'hageo':'Libro del Profeta Hageo','hag':'Libro del Profeta Hageo',
+  'zacarías':'Libro del Profeta Zacarías','zacarias':'Libro del Profeta Zacarías','zac':'Libro del Profeta Zacarías',
+  'malaquías':'Libro del Profeta Malaquías','malaquias':'Libro del Profeta Malaquías','mal':'Libro del Profeta Malaquías',
+  'mateo':'Evangelio de Mateo','mat':'Evangelio de Mateo','mt':'Evangelio de Mateo',
+  'marcos':'Evangelio de Marcos','mar':'Evangelio de Marcos','mc':'Evangelio de Marcos','mr':'Evangelio de Marcos',
+  'lucas':'Evangelio de Lucas','luc':'Evangelio de Lucas','lc':'Evangelio de Lucas',
+  'juan':'Evangelio de Juan','jn':'Evangelio de Juan',
+  'hechos':'Hechos de los Apóstoles','hch':'Hechos de los Apóstoles','hch':'Hechos de los Apóstoles',
+  'romanos':'Carta de Pablo a los Romanos','rom':'Carta de Pablo a los Romanos','ro':'Carta de Pablo a los Romanos',
+  '1 corintios':'1ra Carta de Pablo a los Corintios','1co':'1ra Carta de Pablo a los Corintios','1cor':'1ra Carta de Pablo a los Corintios',
+  '2 corintios':'2da Carta de Pablo a los Corintios','2co':'2da Carta de Pablo a los Corintios','2cor':'2da Carta de Pablo a los Corintios',
+  'gálatas':'Carta de Pablo a los Gálatas','galatas':'Carta de Pablo a los Gálatas','gal':'Carta de Pablo a los Gálatas','gál':'Carta de Pablo a los Gálatas',
+  'efesios':'Carta de Pablo a los Efesios','ef':'Carta de Pablo a los Efesios','efe':'Carta de Pablo a los Efesios',
+  'filipenses':'Carta de Pablo a los Filipenses','flp':'Carta de Pablo a los Filipenses','fil':'Carta de Pablo a los Filipenses',
+  'colosenses':'Carta de Pablo a los Colosenses','col':'Carta de Pablo a los Colosenses',
+  '1 tesalonicenses':'1ra Carta de Pablo a los Tesalonicenses','1ts':'1ra Carta de Pablo a los Tesalonicenses','1tes':'1ra Carta de Pablo a los Tesalonicenses',
+  '2 tesalonicenses':'2da Carta de Pablo a los Tesalonicenses','2ts':'2da Carta de Pablo a los Tesalonicenses','2tes':'2da Carta de Pablo a los Tesalonicenses',
+  '1 timoteo':'1ra Carta de Pablo a Timoteo','1ti':'1ra Carta de Pablo a Timoteo','1tim':'1ra Carta de Pablo a Timoteo',
+  '2 timoteo':'2da Carta de Pablo a Timoteo','2ti':'2da Carta de Pablo a Timoteo','2tim':'2da Carta de Pablo a Timoteo',
+  'tito':'Carta de Pablo a Tito','tit':'Carta de Pablo a Tito','tt':'Carta de Pablo a Tito',
+  'filemón':'Carta de Pablo a Filemón','filemon':'Carta de Pablo a Filemón','flm':'Carta de Pablo a Filemón',
+  'hebreos':'Carta a los Hebreos','heb':'Carta a los Hebreos',
+  'santiago':'Carta de Santiago','stg':'Carta de Santiago','stgo':'Carta de Santiago',
+  '1 pedro':'1ra Carta de Pedro','1pe':'1ra Carta de Pedro','1p':'1ra Carta de Pedro',
+  '2 pedro':'2da Carta de Pedro','2pe':'2da Carta de Pedro','2p':'2da Carta de Pedro',
+  '1 juan':'1ra Carta de Juan','1jn':'1ra Carta de Juan','1jn':'1ra Carta de Juan',
+  '2 juan':'2da Carta de Juan','2jn':'2da Carta de Juan',
+  '3 juan':'3ra Carta de Juan','3jn':'3ra Carta de Juan',
+  'judas':'Carta de Judas','jud':'Carta de Judas',
+  'apocalipsis':'Libro del Apocalipsis','ap':'Libro del Apocalipsis','apo':'Libro del Apocalipsis',
+};
+
+function detectBook(ref) {
+  if (!ref) return '';
+  const clean = ref.trim().toLowerCase().replace(/\s*\d+:\d+.*$/, '').trim();
+  return BOOK_MAP[clean] || '';
+}
+
+function autoBook() {
+  const ref = document.getElementById('inp-ref').value;
+  const libro = document.getElementById('inp-libro');
+  if (!libro.value || libro.dataset.auto === 'true') {
+    const detected = detectBook(ref);
+    if (detected) { libro.value = detected; libro.dataset.auto = 'true'; }
+  }
+}
+function autoBookEdit() {
+  const ref = document.getElementById('edit-ref').value;
+  const libro = document.getElementById('edit-libro');
+  const detected = detectBook(ref);
+  if (detected) libro.value = detected;
+}
+
+// Limpiar flag auto si el usuario edita el libro manualmente
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('inp-libro').addEventListener('input', function() {
+    this.dataset.auto = 'false';
+  });
+  updateStats();
+  renderLibrary();
+});
+
+// ══════════════════════════════
+// CLOZE PREVIEW
+// ══════════════════════════════
+function renderClozePreview(text) {
+  if (!text) return 'Escribe el cloze arriba para ver la vista previa...';
+  // En frente: mostrar hueco vacío
+  return text.replace(/\{\{c\d+::([^}]+)\}\}/g, '<span class="blank"></span>');
+}
+function syncCloze() {
+  const texto = document.getElementById('inp-texto').value;
+  const clozeField = document.getElementById('inp-cloze');
+  if (!clozeField.value) clozeField.value = texto;
+}
+function updateClozePreview() {
+  const cloze = document.getElementById('inp-cloze').value;
+  document.getElementById('cloze-preview-box').innerHTML = renderClozePreview(cloze);
+}
+function updateEditClozePreview() {
+  const cloze = document.getElementById('edit-cloze').value;
+  document.getElementById('edit-cloze-preview').innerHTML = renderClozePreview(cloze);
+}
+
+// ══════════════════════════════
+// GUARDAR VERSÍCULO
+// ══════════════════════════════
+function saveVerse() {
+  const ref   = document.getElementById('inp-ref').value.trim();
+  const libro = document.getElementById('inp-libro').value.trim();
+  const texto = document.getElementById('inp-texto').value.trim();
+  const cloze = document.getElementById('inp-cloze').value.trim();
+  const tema  = document.getElementById('inp-tema').value.trim();
+
+  if (!ref || !texto || !cloze) { showToast('⚠️ Referencia, texto y cloze son obligatorios', true); return; }
+  if (!cloze.includes('{{c1::')) { showToast('⚠️ El cloze debe tener {{c1::palabra}}', true); return; }
+
+  const duplicate = db.find(v => v.ref.toLowerCase() === ref.toLowerCase());
+  if (duplicate) { showToast('⚠️ Ya existe un versículo con esa referencia', true); return; }
+
+  const verse = {
+    id: Date.now(),
+    ref,
+    libro: libro || detectBook(ref) || '',
+    texto,
+    cloze,
+    tema,
+    creado: new Date().toISOString()
+  };
+  db.push(verse);
+  saveDB();
+  clearForm();
+  renderLibrary();
+  showToast('✅ Versículo guardado: ' + ref);
+}
+
+function clearForm() {
+  ['inp-ref','inp-libro','inp-texto','inp-cloze','inp-tema'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('inp-libro').dataset.auto = 'false';
+  document.getElementById('cloze-preview-box').innerHTML = 'Escribe el cloze arriba para ver la vista previa...';
+}
+
+// ══════════════════════════════
+// BATCH MODE
+// ══════════════════════════════
+function processBatch() {
+  const raw = document.getElementById('batch-input').value.trim();
+  if (!raw) { showToast('⚠️ No hay contenido para procesar', true); return; }
+
+  const lines = raw.split('\n').filter(l => l.trim());
+  let ok = 0, errors = [];
+  const resultDiv = document.getElementById('batch-result');
+  let html = '<div class="batch-result-title">Resultado del procesamiento</div>';
+
+  lines.forEach((line, i) => {
+    const parts = line.split('|').map(p => p.trim());
+    if (parts.length < 3) {
+      errors.push(`Línea ${i+1}: formato incorrecto (necesita al menos 3 columnas)`);
+      html += `<div class="batch-item"><span>Línea ${i+1}: ${parts[0]||'?'}</span><span class="batch-err">❌ Formato incorrecto</span></div>`;
+      return;
+    }
+    const [ref, libroRaw, texto, clozeRaw, tema] = parts;
+    const cloze = clozeRaw || texto;
+    if (!ref || !texto) {
+      html += `<div class="batch-item"><span>Línea ${i+1}</span><span class="batch-err">❌ Referencia o texto vacío</span></div>`;
+      return;
+    }
+    if (cloze && !cloze.includes('{{c1::')) {
+      html += `<div class="batch-item"><span>${ref}</span><span class="batch-err">⚠️ Cloze sin {{c1::}} — guardado sin cloze</span></div>`;
+    }
+    const duplicate = db.find(v => v.ref.toLowerCase() === ref.toLowerCase());
+    if (duplicate) {
+      html += `<div class="batch-item"><span>${ref}</span><span class="batch-err">⚠️ Ya existe</span></div>`;
+      return;
+    }
+    db.push({
+      id: Date.now() + i,
+      ref,
+      libro: libroRaw || detectBook(ref) || '',
+      texto,
+      cloze: cloze || texto,
+      tema: tema || '',
+      creado: new Date().toISOString()
+    });
+    ok++;
+    html += `<div class="batch-item"><span>${ref}</span><span class="batch-ok">✅ Guardado</span></div>`;
+  });
+
+  saveDB();
+  renderLibrary();
+  resultDiv.innerHTML = html;
+  resultDiv.classList.add('show');
+  showToast(`✅ ${ok} versículos guardados de ${lines.length}`);
+}
+
+// ══════════════════════════════
+// BIBLIOTECA
+// ══════════════════════════════
+function renderLibrary() {
+  const q = (document.getElementById('search-box')?.value || '').toLowerCase();
+  const list = document.getElementById('verse-list');
+  const filtered = db.filter(v =>
+    v.ref.toLowerCase().includes(q) ||
+    v.texto.toLowerCase().includes(q) ||
+    (v.libro||'').toLowerCase().includes(q)
+  );
+  document.getElementById('lib-count').textContent = filtered.length + ' versículo' + (filtered.length !== 1 ? 's' : '');
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📜</div><p>${db.length ? 'Sin resultados para tu búsqueda' : 'Aún no hay versículos guardados'}</p></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(v => `
+    <div class="verse-card">
+      <div class="verse-card-header">
+        <div>
+          <div class="verse-ref">${v.ref}</div>
+          <div class="verse-book">${v.libro}</div>
+        </div>
+        <div class="verse-actions">
+          <button class="btn-icon btn-edit" onclick="openEdit(${v.id})" title="Editar">✏️</button>
+          <button class="btn-icon btn-delete" onclick="deleteVerse(${v.id})" title="Eliminar">🗑️</button>
+        </div>
+      </div>
+      <div class="verse-text-preview">${v.texto}</div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════
+// EDITAR / ELIMINAR
+// ══════════════════════════════
+function openEdit(id) {
+  const v = db.find(x => x.id === id);
+  if (!v) return;
+  editingId = id;
+  document.getElementById('edit-ref').value   = v.ref;
+  document.getElementById('edit-libro').value = v.libro;
+  document.getElementById('edit-texto').value = v.texto;
+  document.getElementById('edit-cloze').value = v.cloze;
+  document.getElementById('edit-tema').value  = v.tema || '';
+  document.getElementById('edit-cloze-preview').innerHTML = renderClozePreview(v.cloze);
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  editingId = null;
+}
+function saveEdit() {
+  if (!editingId) return;
+  const idx = db.findIndex(x => x.id === editingId);
+  if (idx === -1) return;
+  const cloze = document.getElementById('edit-cloze').value.trim();
+  if (!cloze.includes('{{c1::')) { showToast('⚠️ El cloze debe tener {{c1::palabra}}', true); return; }
+  db[idx] = {
+    ...db[idx],
+    ref:   document.getElementById('edit-ref').value.trim(),
+    libro: document.getElementById('edit-libro').value.trim(),
+    texto: document.getElementById('edit-texto').value.trim(),
+    cloze,
+    tema:  document.getElementById('edit-tema').value.trim(),
+  };
+  saveDB();
+  renderLibrary();
+  closeModal();
+  showToast('✅ Versículo actualizado');
+}
+function deleteVerse(id) {
+  const v = db.find(x => x.id === id);
+  if (!v) return;
+  if (!confirm(`¿Eliminar "${v.ref}"?`)) return;
+  db = db.filter(x => x.id !== id);
+  saveDB();
+  renderLibrary();
+  showToast('🗑️ Versículo eliminado');
+}
+
+// ══════════════════════════════
+// EXPORTAR ANKI
+// ══════════════════════════════
+function ankiHeader(campos) {
+  return `#separator:tab\n#html:false\n#campos: ${campos}\n`;
+}
+function downloadTxt(filename, content) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = filename; a.click(); URL.revokeObjectURL(a.href);
+}
+function exportTipoA() {
+  if (!db.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
+  const lines = db.map(v => `${v.ref}\t${v.libro}\t${v.texto}\t${v.tema||''}\t\tTipoA`);
+  downloadTxt('TipoA_Referencia_a_Texto.txt', ankiHeader('Referencia, Libro, Versiculo, Tema, Tags, TipoNota') + lines.join('\n'));
+  showToast('📄 Tipo A exportado (' + db.length + ' tarjetas)');
+}
+function exportTipoB() {
+  if (!db.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
+  const lines = db.map(v => `${v.texto}\t${v.ref}\t${v.libro}\t${v.tema||''}\t\tTipoB`);
+  downloadTxt('TipoB_Texto_a_Referencia.txt', ankiHeader('Versiculo, Referencia, Libro, Tema, Tags, TipoNota') + lines.join('\n'));
+  showToast('📄 Tipo B exportado (' + db.length + ' tarjetas)');
+}
+function exportTipoC() {
+  if (!db.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
+  const lines = db.map(v => `${v.cloze}\t${v.ref}\t${v.libro}\t${v.tema||''}\tTipoC`);
+  downloadTxt('TipoC_Cloze.txt', ankiHeader('Texto, Referencia, Libro, Tags, TipoNota') + lines.join('\n'));
+  showToast('📄 Tipo C exportado (' + db.length + ' tarjetas)');
+}
+function exportAll() {
+  if (!db.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
+  setTimeout(exportTipoA, 0);
+  setTimeout(exportTipoB, 400);
+  setTimeout(exportTipoC, 800);
+  showToast('⬇️ Descargando los 3 archivos...');
+}
+
+// ══════════════════════════════
+// IMPORTAR / EXPORTAR JSON
+// ══════════════════════════════
+function exportJSON() {
+  if (!db.length) { showToast('⚠️ No hay datos para exportar', true); return; }
+  const data = { version: 1, exportado: new Date().toISOString(), total: db.length, versiculos: db };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `versiculo_db_${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  showToast('💾 JSON exportado (' + db.length + ' versículos)');
+}
+function triggerImport() { document.getElementById('importFile').click(); }
+function handleImport(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      const verses = data.versiculos || data;
+      if (!Array.isArray(verses)) throw new Error('Formato inválido');
+      let added = 0;
+      verses.forEach(v => {
+        if (!db.find(x => x.ref === v.ref)) { db.push(v); added++; }
+      });
+      saveDB(); renderLibrary();
+      showToast(`📂 ${added} versículos importados (${verses.length - added} duplicados omitidos)`);
+    } catch(err) { showToast('❌ Error al leer el JSON: ' + err.message, true); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ══════════════════════════════
+// STATS Y UI
+// ══════════════════════════════
+function updateStats() {
+  document.getElementById('stat-total').textContent = db.length;
+  document.getElementById('stat-cards').textContent = db.length * 3;
+}
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['agregar','batch','biblioteca'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'biblioteca') renderLibrary();
+}
+function showToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (error ? ' error' : '');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// Cerrar modal al hacer click fuera
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
