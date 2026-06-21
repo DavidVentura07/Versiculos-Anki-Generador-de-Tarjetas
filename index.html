@@ -882,6 +882,54 @@ function detectBook(ref) {
   return BOOK_MAP[clean] || '';
 }
 
+// ══════════════════════════════
+// ETIQUETA CORTA DEL LIBRO (para Tags de Anki)
+// Convención del usuario: sin espacios, sin tildes, numerados pegados.
+// Ej: Genesis, Isaias, Eclesiastes, 1Corintios, 1Juan, 2Timoteo
+// ══════════════════════════════
+const BOOK_TAG = {
+  'Libro de Génesis':'Genesis','Libro de Éxodo':'Exodo','Libro de Levítico':'Levitico',
+  'Libro de Números':'Numeros','Libro de Deuteronomio':'Deuteronomio','Libro de Josué':'Josue',
+  'Libro de Jueces':'Jueces','Libro de Rut':'Rut',
+  '1er Libro de Samuel':'1Samuel','2do Libro de Samuel':'2Samuel',
+  '1er Libro de Reyes':'1Reyes','2do Libro de Reyes':'2Reyes',
+  '1er Libro de las Crónicas':'1Cronicas','2do Libro de las Crónicas':'2Cronicas',
+  'Libro de Esdras':'Esdras','Libro de Nehemías':'Nehemias','Libro de Ester':'Ester',
+  'Libro de Job':'Job','Libro de los Salmos':'Salmos','Libro de los Proverbios':'Proverbios',
+  'Libro de Eclesiastés':'Eclesiastes','Cantares de Salomón':'Cantares',
+  'Libro del Profeta Isaías':'Isaias','Libro del Profeta Jeremías':'Jeremias',
+  'Libro de Lamentaciones':'Lamentaciones','Libro del Profeta Ezequiel':'Ezequiel',
+  'Libro del Profeta Daniel':'Daniel','Libro del Profeta Oseas':'Oseas',
+  'Libro del Profeta Joel':'Joel','Libro del Profeta Amós':'Amos',
+  'Libro del Profeta Abdías':'Abdias','Libro del Profeta Jonás':'Jonas',
+  'Libro del Profeta Miqueas':'Miqueas','Libro del Profeta Nahúm':'Nahum',
+  'Libro del Profeta Habacuc':'Habacuc','Libro del Profeta Sofonías':'Sofonias',
+  'Libro del Profeta Hageo':'Hageo','Libro del Profeta Zacarías':'Zacarias',
+  'Libro del Profeta Malaquías':'Malaquias',
+  'Evangelio de Mateo':'Mateo','Evangelio de Marcos':'Marcos','Evangelio de Lucas':'Lucas',
+  'Evangelio de Juan':'Juan','Hechos de los Apóstoles':'Hechos',
+  'Carta de Pablo a los Romanos':'Romanos','1ra Carta de Pablo a los Corintios':'1Corintios',
+  '2da Carta de Pablo a los Corintios':'2Corintios','Carta de Pablo a los Gálatas':'Galatas',
+  'Carta de Pablo a los Efesios':'Efesios','Carta de Pablo a los Filipenses':'Filipenses',
+  'Carta de Pablo a los Colosenses':'Colosenses',
+  '1ra Carta de Pablo a los Tesalonicenses':'1Tesalonicenses','2da Carta de Pablo a los Tesalonicenses':'2Tesalonicenses',
+  '1ra Carta de Pablo a Timoteo':'1Timoteo','2da Carta de Pablo a Timoteo':'2Timoteo',
+  'Carta de Pablo a Tito':'Tito','Carta de Pablo a Filemón':'Filemon',
+  'Carta a los Hebreos':'Hebreos','Carta de Santiago':'Santiago',
+  '1ra Carta de Pedro':'1Pedro','2da Carta de Pedro':'2Pedro',
+  '1ra Carta de Juan':'1Juan','2da Carta de Juan':'2Juan','3ra Carta de Juan':'3Juan',
+  'Carta de Judas':'Judas','Libro del Apocalipsis':'Apocalipsis',
+};
+
+// Devuelve la etiqueta corta del libro a partir de la referencia
+function bookTag(ref) {
+  return BOOK_TAG[detectBook(ref)] || '';
+}
+// Construye el contenido del campo Tags de Anki: "Libro Tipo" (ej. "Salmos TipoA")
+function tagsFor(v, tipo) {
+  return [bookTag(v.ref), tipo].filter(Boolean).join(' ');
+}
+
 function autoBook() {
   const ref = document.getElementById('inp-ref').value;
   const libro = document.getElementById('inp-libro');
@@ -1232,40 +1280,110 @@ function ankiHeader(campos) {
   // html:true => Anki interpreta los <br> como saltos de línea reales (poesía/Salmos)
   return `#separator:tab\n#html:true\n#campos: ${campos}\n`;
 }
+// Descarga clásica (fallback): va a la carpeta de Descargas del navegador
 function downloadTxt(filename, content) {
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = filename; a.click(); URL.revokeObjectURL(a.href);
 }
-function exportTipoA() {
-  const set = getExportSet();
-  if (!set.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
-  // El Tipo va en el campo Tags (5ª columna) para tu organización de mazos
-  const lines = set.map(v => [v.ref, v.libro, v.texto, v.tema||'', 'TipoA', 'TipoA'].map(sanitizeField).join('\t'));
-  downloadTxt('TipoA_Referencia_a_Texto.txt', ankiHeader('Referencia, Libro, Versiculo, Tema, Tags, TipoNota') + lines.join('\n'));
-  showToast('📄 Tipo A exportado (' + set.length + ' tarjetas)');
+
+// Guarda un archivo dejando ELEGIR la ubicación (File System Access API).
+// Devuelve: 'saved' (guardado), 'cancel' (usuario canceló) o 'fallback' (se descargó a Descargas).
+async function saveTextFile(suggestedName, content) {
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName,
+        types: [{ description: 'Archivo de texto para Anki', accept: { 'text/plain': ['.txt'] } }]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      return 'saved';
+    } catch (err) {
+      if (err && err.name === 'AbortError') return 'cancel';   // el usuario cerró el diálogo
+      downloadTxt(suggestedName, content);                      // permiso denegado u otro error
+      return 'fallback';
+    }
+  }
+  downloadTxt(suggestedName, content);                          // navegador sin soporte (Firefox/Safari)
+  return 'fallback';
 }
-function exportTipoB() {
-  const set = getExportSet();
-  if (!set.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
-  const lines = set.map(v => [v.texto, v.ref, v.libro, v.tema||'', 'TipoB', 'TipoB'].map(sanitizeField).join('\t'));
-  downloadTxt('TipoB_Texto_a_Referencia.txt', ankiHeader('Versiculo, Referencia, Libro, Tema, Tags, TipoNota') + lines.join('\n'));
-  showToast('📄 Tipo B exportado (' + set.length + ' tarjetas)');
+
+// ── Constructores de cada archivo: { filename, content, count } ──
+function buildTipoA(set) {
+  // Campos: Referencia, Libro, Versiculo, Tema, Tags, TipoNota
+  // Tags lleva "Libro Tipo" (ej. "Salmos TipoA") para tu organización de mazos
+  const lines = set.map(v => [v.ref, v.libro, v.texto, v.tema||'', tagsFor(v,'TipoA'), 'TipoA'].map(sanitizeField).join('\t'));
+  return { filename: 'TipoA_Referencia_a_Texto.txt', content: ankiHeader('Referencia, Libro, Versiculo, Tema, Tags, TipoNota') + lines.join('\n'), count: set.length };
 }
-function exportTipoC() {
-  const conCloze = getExportSet().filter(v => /\{\{c\d+::/.test(v.cloze||''));
-  if (!conCloze.length) { showToast('⚠️ No hay versículos con cloze válido para exportar', true); return; }
-  const lines = conCloze.map(v => [v.cloze, v.ref, v.libro, v.tema||'', 'TipoC', 'TipoC'].map(sanitizeField).join('\t'));
-  downloadTxt('TipoC_Cloze.txt', ankiHeader('Texto, Referencia, Libro, Tema, Tags, TipoNota') + lines.join('\n'));
+function buildTipoB(set) {
+  const lines = set.map(v => [v.texto, v.ref, v.libro, v.tema||'', tagsFor(v,'TipoB'), 'TipoB'].map(sanitizeField).join('\t'));
+  return { filename: 'TipoB_Texto_a_Referencia.txt', content: ankiHeader('Versiculo, Referencia, Libro, Tema, Tags, TipoNota') + lines.join('\n'), count: set.length };
+}
+function buildTipoC(set) {
+  const conCloze = set.filter(v => /\{\{c\d+::/.test(v.cloze||''));
+  const lines = conCloze.map(v => [v.cloze, v.ref, v.libro, v.tema||'', tagsFor(v,'TipoC'), 'TipoC'].map(sanitizeField).join('\t'));
   const cards = conCloze.reduce((n, v) => n + clozeCardCount(v.cloze), 0);
-  showToast('📄 Tipo C exportado (' + cards + ' tarjetas de ' + conCloze.length + ' versículos)');
+  return { filename: 'TipoC_Cloze.txt', content: ankiHeader('Texto, Referencia, Libro, Tema, Tags, TipoNota') + lines.join('\n'), count: conCloze.length, cards };
 }
-function exportAll() {
-  if (!getExportSet().length) { showToast('⚠️ No hay versículos para exportar', true); return; }
-  setTimeout(exportTipoA, 0);
-  setTimeout(exportTipoB, 400);
-  setTimeout(exportTipoC, 800);
-  showToast('⬇️ Descargando los 3 archivos...');
+
+function toastSave(res, etiqueta) {
+  if (res === 'cancel') return;
+  if (res === 'fallback') showToast('⬇️ ' + etiqueta + ' descargado en tu carpeta de Descargas');
+  else showToast('✅ ' + etiqueta + ' guardado');
+}
+
+async function exportTipoA() {
+  const set = getExportSet();
+  if (!set.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
+  const f = buildTipoA(set);
+  toastSave(await saveTextFile(f.filename, f.content), `Tipo A (${set.length} tarjetas)`);
+}
+async function exportTipoB() {
+  const set = getExportSet();
+  if (!set.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
+  const f = buildTipoB(set);
+  toastSave(await saveTextFile(f.filename, f.content), `Tipo B (${set.length} tarjetas)`);
+}
+async function exportTipoC() {
+  const set = getExportSet();
+  if (!set.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
+  const f = buildTipoC(set);
+  if (!f.count) { showToast('⚠️ No hay versículos con cloze válido para exportar', true); return; }
+  toastSave(await saveTextFile(f.filename, f.content), `Tipo C (${f.cards} tarjetas)`);
+}
+
+// "Los 3 a la vez": un solo diálogo para elegir CARPETA y se escriben los 3 archivos.
+async function exportAll() {
+  const set = getExportSet();
+  if (!set.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
+  const files = [buildTipoA(set), buildTipoB(set), buildTipoC(set)].filter(f => f.count > 0);
+  if (!files.length) { showToast('⚠️ No hay nada para exportar', true); return; }
+
+  if (window.showDirectoryPicker) {
+    let dir;
+    try { dir = await window.showDirectoryPicker(); }
+    catch (err) { if (err && err.name === 'AbortError') return; dir = null; }
+    if (dir) {
+      try {
+        for (const f of files) {
+          const handle = await dir.getFileHandle(f.filename, { create: true });
+          const writable = await handle.createWritable();
+          await writable.write(f.content);
+          await writable.close();
+        }
+        showToast(`✅ ${files.length} archivos guardados en la carpeta elegida`);
+        return;
+      } catch (err) {
+        showToast('❌ Error al guardar en la carpeta: ' + err.message, true);
+        return;
+      }
+    }
+  }
+  // Fallback: sin soporte de carpeta -> descarga los archivos a Descargas
+  files.forEach((f, i) => setTimeout(() => downloadTxt(f.filename, f.content), i * 400));
+  showToast(`⬇️ Descargando ${files.length} archivos en tu carpeta de Descargas...`);
 }
 
 // ══════════════════════════════
