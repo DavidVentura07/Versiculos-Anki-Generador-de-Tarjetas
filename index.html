@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -203,6 +203,48 @@ main {
 
 /* Campo cloze */
 .cloze-area { min-height: 110px; font-family: 'EB Garamond', serif; font-size: 15px; }
+
+/* Editor cloze WYSIWYG (contenteditable) */
+.cloze-toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+.cloze-toolbar .hint { margin: 0; }
+.btn-cloze {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--mid) 0%, var(--sage) 100%);
+  color: #fff; border: none; cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.3px;
+  transition: all 0.15s;
+  box-shadow: 0 2px 8px rgba(45,106,79,0.3);
+}
+.btn-cloze:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.btn-cloze:active { transform: translateY(0); }
+.cloze-editor {
+  min-height: 110px;
+  font-family: 'EB Garamond', serif; font-size: 15px;
+  color: var(--ink);
+  background: var(--cream);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cloze-editor:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(82,183,136,0.12); background: #fff; }
+.cloze-editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted); font-style: italic; pointer-events: none;
+}
+.cloze-editor b.cz {
+  font-weight: 700;
+  color: var(--forest);
+  background: rgba(82,183,136,0.18);
+  border-bottom: 2px solid var(--sage);
+  border-radius: 3px;
+  padding: 0 2px;
+}
 .cloze-preview {
   background: var(--parchment);
   border: 1.5px solid rgba(201,168,76,0.3);
@@ -256,38 +298,29 @@ main {
 }
 .btn-secondary:hover { border-color: var(--sage); color: var(--mid); }
 
-/* ── BATCH MODE ── */
-.batch-instructions {
-  background: var(--parchment);
-  border: 1px solid rgba(201,168,76,0.25);
-  border-left: 3px solid var(--gold);
-  border-radius: var(--radius-sm);
-  padding: 12px 16px;
-  font-size: 13px; color: #5a4a2a; line-height: 1.6;
-}
-.batch-instructions strong { color: #3a2a0a; display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
-.batch-textarea {
-  min-height: 200px !important;
-  font-family: 'Courier New', monospace !important;
-  font-size: 13px !important;
-  line-height: 1.8 !important;
-}
-.batch-result {
-  background: var(--cream); border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm); padding: 14px;
-  margin-top: 12px; display: none;
-}
-.batch-result.show { display: block; }
-.batch-result-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 8px; }
-.batch-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-.batch-item:last-child { border-bottom: none; }
-.batch-ok { color: var(--mid); font-weight: 600; }
-.batch-err { color: #c0392b; }
-
 /* ── BIBLIOTECA ── */
 .library-controls {
-  display: flex; gap: 10px; margin-bottom: 16px; align-items: center;
+  display: flex; gap: 10px; margin-bottom: 12px; align-items: center;
 }
+.library-select-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 14px; padding: 8px 12px;
+  background: var(--parchment);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-radius: var(--radius-sm);
+  font-size: 12px; color: var(--muted);
+}
+.library-select-bar label { display: flex; align-items: center; gap: 7px; cursor: pointer; font-weight: 600; }
+.library-select-bar .sel-count { color: var(--mid); font-weight: 700; }
+.btn-sel-clear {
+  background: transparent; border: none; color: var(--muted);
+  cursor: pointer; font-size: 12px; font-weight: 600; text-decoration: underline;
+}
+.btn-sel-clear:hover { color: #c0392b; }
+.verse-checkbox { width: 17px; height: 17px; accent-color: var(--mid); cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+.verse-card.selected { border-color: var(--sage); background: rgba(149,213,178,0.12); box-shadow: 0 2px 12px rgba(82,183,136,0.12); }
+.verse-card-main { display: flex; gap: 12px; align-items: flex-start; }
+.verse-card-body { flex: 1; min-width: 0; }
 .search-box {
   flex: 1; padding: 9px 14px;
   background: var(--cream); border: 1.5px solid var(--border);
@@ -372,6 +405,13 @@ main {
 }
 .export-stat-label { font-size: 12px; color: var(--muted); font-weight: 500; }
 .export-stat-val { font-size: 18px; font-weight: 700; color: var(--forest); font-family: 'Cinzel', serif; }
+.export-scope {
+  font-size: 12px; font-weight: 600; text-align: center;
+  padding: 8px 10px; border-radius: var(--radius-sm);
+  background: rgba(82,183,136,0.1); color: var(--mid);
+  border: 1px dashed rgba(82,183,136,0.4);
+}
+.export-scope.all { background: var(--cream); color: var(--muted); border-style: solid; border-color: var(--border); }
 .export-divider { height: 1px; background: var(--border); margin: 4px 0; }
 .btn-export {
   width: 100%; padding: 13px;
@@ -525,7 +565,6 @@ main {
     <!-- TABS -->
     <div class="tabs">
       <button class="tab active" onclick="switchTab('agregar')">➕ Agregar versículo</button>
-      <button class="tab" onclick="switchTab('batch')">📋 Agregar varios</button>
       <button class="tab" onclick="switchTab('biblioteca')">📖 Biblioteca</button>
     </div>
 
@@ -557,9 +596,12 @@ main {
               <textarea id="inp-texto" class="cloze-area" placeholder="Escribe aquí el versículo completo..." oninput="syncCloze()"></textarea>
             </div>
             <div class="field">
-              <label>Cloze — palabra clave oculta *</label>
-              <textarea id="inp-cloze" class="cloze-area" placeholder="Copia el versículo y marca la palabra clave con {{c1::palabra}}" oninput="updateClozePreview()"></textarea>
-              <span class="hint">Ejemplo: "...ha dado a su &#123;&#123;c1::Hijo unigénito&#125;&#125;, para que..."</span>
+              <label>Cloze — marca las palabras clave *</label>
+              <div class="cloze-toolbar">
+                <button type="button" class="btn-cloze" onmousedown="event.preventDefault()" onclick="toggleCloze('inp-cloze')">🅱️ Marcar / quitar cloze</button>
+                <span class="hint">Selecciona una palabra y pica el botón. Cada palabra marcada genera su propia tarjeta.</span>
+              </div>
+              <div id="inp-cloze" class="cloze-editor" contenteditable="true" data-placeholder="Escribe o pega el versículo y resalta las palabras clave..." oninput="updateClozePreview()"></div>
             </div>
             <div class="field">
               <label>Vista previa del cloze</label>
@@ -573,40 +615,6 @@ main {
               <button class="btn-secondary" onclick="clearForm()">Limpiar</button>
               <button class="btn-primary" onclick="saveVerse()">✅ Guardar versículo</button>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB: BATCH -->
-    <div id="tab-batch" class="tab-content">
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-header-icon">📋</span>
-          <div>
-            <div class="panel-header-title">Agregar Varios</div>
-            <div class="panel-header-sub">Pega múltiples versículos a la vez</div>
-          </div>
-        </div>
-        <div class="panel-body">
-          <div class="form-grid">
-            <div class="batch-instructions">
-              <strong>📌 Formato requerido</strong>
-              Cada versículo en una línea con este formato:<br>
-              <code>Referencia | Libro | Texto completo | Cloze con {{c1::palabra}} | Tema</code><br><br>
-              Ejemplo:<br>
-              <code>Proverbios 3:5-6 | Libro de los Proverbios | Fíate de Jehová de todo tu corazón... | Fíate de Jehová de todo tu {{c1::corazón}}... | Fe</code><br><br>
-              El campo <strong>Tema</strong> es opcional. El <strong>Libro</strong> también puede dejarse vacío y se detecta automáticamente.
-            </div>
-            <div class="field">
-              <label>Versículos (uno por línea)</label>
-              <textarea id="batch-input" class="batch-textarea" placeholder="Proverbios 3:5-6 | Libro de los Proverbios | Fíate de Jehová..."></textarea>
-            </div>
-            <div class="form-actions">
-              <button class="btn-secondary" onclick="document.getElementById('batch-input').value=''">Limpiar</button>
-              <button class="btn-primary" onclick="processBatch()">✅ Procesar y guardar</button>
-            </div>
-            <div id="batch-result" class="batch-result"></div>
           </div>
         </div>
       </div>
@@ -626,6 +634,10 @@ main {
           <div class="library-controls">
             <input type="text" class="search-box" id="search-box" placeholder="Buscar por referencia o texto..." oninput="renderLibrary()">
             <span class="library-count" id="lib-count">0 versículos</span>
+          </div>
+          <div class="library-select-bar">
+            <label><input type="checkbox" id="select-all" class="verse-checkbox" onchange="toggleSelectAll(this.checked)"> Seleccionar todos</label>
+            <span><span class="sel-count" id="sel-count">0</span> seleccionados · <button class="btn-sel-clear" onclick="clearSelection()">limpiar</button></span>
           </div>
           <div class="verse-list" id="verse-list">
             <div class="empty-state">
@@ -657,6 +669,7 @@ main {
           <span class="export-stat-label">Tarjetas que se generarán</span>
           <span class="export-stat-val" id="stat-cards">0</span>
         </div>
+        <div class="export-scope all" id="export-scope">Se exportarán todos los versículos</div>
         <div class="export-divider"></div>
         <button class="btn-export" onclick="exportTipoA()">📄 Tipo A — Referencia → Texto</button>
         <button class="btn-export" onclick="exportTipoB()">📄 Tipo B — Texto → Referencia</button>
@@ -674,19 +687,19 @@ main {
       <div class="tips-body">
         <div class="tip">
           <span class="tip-icon">1️⃣</span>
-          <span>Copia el versículo completo en el campo Cloze</span>
+          <span>El versículo se copia solo al campo Cloze. También puedes escribir ahí directamente.</span>
         </div>
         <div class="tip">
           <span class="tip-icon">2️⃣</span>
-          <span>Elige la palabra clave más importante y rodéala con <code>{{c1::palabra}}</code></span>
+          <span>Selecciona la palabra clave con el mouse y pica <code>🅱️ Marcar cloze</code>. Quedará resaltada en negrita.</span>
         </div>
         <div class="tip">
           <span class="tip-icon">3️⃣</span>
-          <span>La vista previa te muestra el hueco <span style="display:inline-block;background:#d8f3dc;border:1.5px solid #52b788;border-radius:3px;width:30px;height:14px;vertical-align:middle"></span> tal como aparecerá en Anki</span>
+          <span>Marca varias palabras si quieres: <strong>cada una genera su propia tarjeta</strong> de relleno por separado.</span>
         </div>
         <div class="tip">
           <span class="tip-icon">✅</span>
-          <span>No ocultes palabras obvias como "Dios" o "Jesús". Elige frases teológicamente significativas</span>
+          <span>No ocultes palabras obvias como "Dios" o "Jesús". Elige frases teológicamente significativas.</span>
         </div>
       </div>
     </div>
@@ -718,8 +731,12 @@ main {
         <textarea id="edit-texto" style="min-height:80px"></textarea>
       </div>
       <div class="field">
-        <label>Cloze *</label>
-        <textarea id="edit-cloze" style="min-height:80px" oninput="updateEditClozePreview()"></textarea>
+        <label>Cloze — marca las palabras clave *</label>
+        <div class="cloze-toolbar">
+          <button type="button" class="btn-cloze" onmousedown="event.preventDefault()" onclick="toggleCloze('edit-cloze')">🅱️ Marcar / quitar cloze</button>
+          <span class="hint">Selecciona una palabra y pica el botón.</span>
+        </div>
+        <div id="edit-cloze" class="cloze-editor" contenteditable="true" data-placeholder="Resalta las palabras clave..." oninput="updateEditClozePreview()"></div>
       </div>
       <div class="field">
         <label>Vista previa</label>
@@ -747,14 +764,44 @@ main {
 const STORAGE_KEY = 'versiculo_db';
 let db = loadDB();
 let editingId = null;
+let clozeUserEdited = false; // ¿el usuario ya tocó/marcó el campo cloze?
 
 function loadDB() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
   catch { return []; }
 }
 function saveDB() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  } catch (err) {
+    showToast('❌ No se pudo guardar (almacenamiento lleno). Exporta un JSON de respaldo.', true);
+    console.error('localStorage error:', err);
+  }
   updateStats();
+}
+
+// Escapa HTML para evitar inyección/ruptura al renderizar con innerHTML
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Prepara un campo para el TSV de Anki (modo #html:true):
+// - escapa &, <, > para que ningún símbolo se interprete como HTML
+// - quita tabuladores (separan columnas) y convierte saltos de línea en <br>
+//   para preservar la estructura de versos/poesía SIN romper la fila
+function sanitizeField(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\t/g, ' ')
+    .replace(/\r?\n/g, '<br>')
+    .trim();
 }
 
 // ══════════════════════════════
@@ -804,7 +851,7 @@ const BOOK_MAP = {
   'marcos':'Evangelio de Marcos','mar':'Evangelio de Marcos','mc':'Evangelio de Marcos','mr':'Evangelio de Marcos',
   'lucas':'Evangelio de Lucas','luc':'Evangelio de Lucas','lc':'Evangelio de Lucas',
   'juan':'Evangelio de Juan','jn':'Evangelio de Juan',
-  'hechos':'Hechos de los Apóstoles','hch':'Hechos de los Apóstoles','hch':'Hechos de los Apóstoles',
+  'hechos':'Hechos de los Apóstoles','hch':'Hechos de los Apóstoles','he':'Hechos de los Apóstoles',
   'romanos':'Carta de Pablo a los Romanos','rom':'Carta de Pablo a los Romanos','ro':'Carta de Pablo a los Romanos',
   '1 corintios':'1ra Carta de Pablo a los Corintios','1co':'1ra Carta de Pablo a los Corintios','1cor':'1ra Carta de Pablo a los Corintios',
   '2 corintios':'2da Carta de Pablo a los Corintios','2co':'2da Carta de Pablo a los Corintios','2cor':'2da Carta de Pablo a los Corintios',
@@ -822,7 +869,7 @@ const BOOK_MAP = {
   'santiago':'Carta de Santiago','stg':'Carta de Santiago','stgo':'Carta de Santiago',
   '1 pedro':'1ra Carta de Pedro','1pe':'1ra Carta de Pedro','1p':'1ra Carta de Pedro',
   '2 pedro':'2da Carta de Pedro','2pe':'2da Carta de Pedro','2p':'2da Carta de Pedro',
-  '1 juan':'1ra Carta de Juan','1jn':'1ra Carta de Juan','1jn':'1ra Carta de Juan',
+  '1 juan':'1ra Carta de Juan','1jn':'1ra Carta de Juan','1jan':'1ra Carta de Juan',
   '2 juan':'2da Carta de Juan','2jn':'2da Carta de Juan',
   '3 juan':'3ra Carta de Juan','3jn':'3ra Carta de Juan',
   'judas':'Carta de Judas','jud':'Carta de Judas',
@@ -831,7 +878,7 @@ const BOOK_MAP = {
 
 function detectBook(ref) {
   if (!ref) return '';
-  const clean = ref.trim().toLowerCase().replace(/\s*\d+:\d+.*$/, '').trim();
+  const clean = ref.trim().toLowerCase().replace(/\s+\d.*$/, '').trim();
   return BOOK_MAP[clean] || '';
 }
 
@@ -855,29 +902,125 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('inp-libro').addEventListener('input', function() {
     this.dataset.auto = 'false';
   });
+  // Cuando el usuario escribe directamente en el editor cloze, deja de reflejarse el texto
+  document.getElementById('inp-cloze').addEventListener('input', () => { clozeUserEdited = true; });
   updateStats();
   renderLibrary();
 });
 
 // ══════════════════════════════
-// CLOZE PREVIEW
+// EDITOR CLOZE (WYSIWYG)
 // ══════════════════════════════
+
+// Convierte el contenido del editor (HTML) a la cadena cloze de Anki.
+// Cada fragmento marcado <b class="cz"> se numera secuencialmente: c1, c2, c3…
+// para que Anki genere una TARJETA SEPARADA por cada palabra.
+function serializeCloze(editor) {
+  let out = '', n = 0;
+  (function walk(node) {
+    node.childNodes.forEach(child => {
+      if (child.nodeType === 3) {                 // texto
+        out += child.textContent;
+      } else if (child.nodeType === 1) {          // elemento
+        const tag = child.tagName;
+        if (tag === 'BR') {
+          out += '\n';
+        } else if (child.matches('b.cz')) {
+          const inner = child.textContent.replace(/\s+/g, ' ').trim();
+          if (inner) { n++; out += `{{c${n}::${inner}}}`; }
+        } else if (tag === 'DIV' || tag === 'P') {
+          if (out && !out.endsWith('\n')) out += '\n';
+          walk(child);
+        } else {
+          walk(child);
+        }
+      }
+    });
+  })(editor);
+  return out.replace(/ /g, ' ').replace(/\n{3,}/g, '\n\n').trimEnd();
+}
+
+// Convierte una cadena cloze almacenada de vuelta a HTML para el editor.
+function clozeToHtml(str) {
+  return escapeHtml(str || '')
+    .replace(/\{\{c\d+::([^}]*)\}\}/g, '<b class="cz">$1</b>')
+    .replace(/\r?\n/g, '<br>');
+}
+
+// Pone texto plano (con saltos de línea) dentro de un editor contenteditable.
+function setEditorText(editor, text) {
+  editor.innerHTML = escapeHtml(text || '').replace(/\r?\n/g, '<br>');
+}
+
+// Marca / desmarca como cloze la selección actual dentro del editor.
+function toggleCloze(editorId) {
+  const editor = document.getElementById(editorId);
+  const sel = window.getSelection();
+  if (!sel.rangeCount) { showToast('⚠️ Selecciona una palabra dentro del campo cloze', true); return; }
+  const range = sel.getRangeAt(0);
+  if (!editor.contains(range.commonAncestorContainer)) { showToast('⚠️ Selecciona dentro del campo cloze', true); return; }
+
+  // ¿La selección está dentro de un cloze ya existente? -> desmarcar
+  let node = range.commonAncestorContainer;
+  let el = node.nodeType === 3 ? node.parentElement : node;
+  const cz = el && el.closest ? el.closest('b.cz') : null;
+  if (cz && editor.contains(cz)) {
+    unwrapEl(cz);
+    editor.normalize();
+    afterClozeChange(editorId);
+    return;
+  }
+
+  if (sel.isCollapsed) { showToast('⚠️ Selecciona una palabra primero', true); return; }
+
+  // Marcar: envolver la selección en <b class="cz">
+  const frag = range.extractContents();
+  // Evitar clozes anidados: desenvolver cualquier .cz dentro de la selección
+  frag.querySelectorAll('b.cz').forEach(unwrapEl);
+  const b = document.createElement('b');
+  b.className = 'cz';
+  b.appendChild(frag);
+  range.insertNode(b);
+  editor.normalize();
+  sel.removeAllRanges();
+  afterClozeChange(editorId);
+}
+function unwrapEl(el) {
+  const parent = el.parentNode;
+  while (el.firstChild) parent.insertBefore(el.firstChild, el);
+  parent.removeChild(el);
+}
+function afterClozeChange(editorId) {
+  if (editorId === 'edit-cloze') {
+    updateEditClozePreview();
+  } else {
+    clozeUserEdited = true; // marcar cuenta como edición: ya no se sobrescribe con el texto
+    updateClozePreview();
+  }
+}
+
+// ── Vista previa (lado frontal con huecos) ──
 function renderClozePreview(text) {
-  if (!text) return 'Escribe el cloze arriba para ver la vista previa...';
-  // En frente: mostrar hueco vacío
-  return text.replace(/\{\{c\d+::([^}]+)\}\}/g, '<span class="blank"></span>');
+  if (!text || !text.trim()) return 'Marca las palabras clave para ver la vista previa...';
+  return escapeHtml(text)
+    .replace(/\{\{c\d+::([^}]+)\}\}/g, '<span class="blank"></span>')
+    .replace(/\r?\n/g, '<br>');
 }
 function syncCloze() {
   const texto = document.getElementById('inp-texto').value;
-  const clozeField = document.getElementById('inp-cloze');
-  if (!clozeField.value) clozeField.value = texto;
+  const editor = document.getElementById('inp-cloze');
+  // Mientras el usuario no haya tocado/marcado el editor, refleja el texto del versículo en vivo
+  if (!clozeUserEdited) {
+    setEditorText(editor, texto);
+    updateClozePreview();
+  }
 }
 function updateClozePreview() {
-  const cloze = document.getElementById('inp-cloze').value;
+  const cloze = serializeCloze(document.getElementById('inp-cloze'));
   document.getElementById('cloze-preview-box').innerHTML = renderClozePreview(cloze);
 }
 function updateEditClozePreview() {
-  const cloze = document.getElementById('edit-cloze').value;
+  const cloze = serializeCloze(document.getElementById('edit-cloze'));
   document.getElementById('edit-cloze-preview').innerHTML = renderClozePreview(cloze);
 }
 
@@ -888,11 +1031,11 @@ function saveVerse() {
   const ref   = document.getElementById('inp-ref').value.trim();
   const libro = document.getElementById('inp-libro').value.trim();
   const texto = document.getElementById('inp-texto').value.trim();
-  const cloze = document.getElementById('inp-cloze').value.trim();
+  const cloze = serializeCloze(document.getElementById('inp-cloze')).trim();
   const tema  = document.getElementById('inp-tema').value.trim();
 
-  if (!ref || !texto || !cloze) { showToast('⚠️ Referencia, texto y cloze son obligatorios', true); return; }
-  if (!cloze.includes('{{c1::')) { showToast('⚠️ El cloze debe tener {{c1::palabra}}', true); return; }
+  if (!ref || !texto) { showToast('⚠️ Referencia y texto son obligatorios', true); return; }
+  if (!/\{\{c\d+::/.test(cloze)) { showToast('⚠️ Marca al menos una palabra como cloze (botón 🅱️)', true); return; }
 
   const duplicate = db.find(v => v.ref.toLowerCase() === ref.toLowerCase());
   if (duplicate) { showToast('⚠️ Ya existe un versículo con esa referencia', true); return; }
@@ -914,69 +1057,19 @@ function saveVerse() {
 }
 
 function clearForm() {
-  ['inp-ref','inp-libro','inp-texto','inp-cloze','inp-tema'].forEach(id => {
+  ['inp-ref','inp-libro','inp-texto','inp-tema'].forEach(id => {
     document.getElementById(id).value = '';
   });
+  document.getElementById('inp-cloze').innerHTML = '';
   document.getElementById('inp-libro').dataset.auto = 'false';
-  document.getElementById('cloze-preview-box').innerHTML = 'Escribe el cloze arriba para ver la vista previa...';
+  clozeUserEdited = false;
+  document.getElementById('cloze-preview-box').innerHTML = 'Marca las palabras clave para ver la vista previa...';
 }
 
 // ══════════════════════════════
-// BATCH MODE
+// BIBLIOTECA + SELECCIÓN
 // ══════════════════════════════
-function processBatch() {
-  const raw = document.getElementById('batch-input').value.trim();
-  if (!raw) { showToast('⚠️ No hay contenido para procesar', true); return; }
-
-  const lines = raw.split('\n').filter(l => l.trim());
-  let ok = 0, errors = [];
-  const resultDiv = document.getElementById('batch-result');
-  let html = '<div class="batch-result-title">Resultado del procesamiento</div>';
-
-  lines.forEach((line, i) => {
-    const parts = line.split('|').map(p => p.trim());
-    if (parts.length < 3) {
-      errors.push(`Línea ${i+1}: formato incorrecto (necesita al menos 3 columnas)`);
-      html += `<div class="batch-item"><span>Línea ${i+1}: ${parts[0]||'?'}</span><span class="batch-err">❌ Formato incorrecto</span></div>`;
-      return;
-    }
-    const [ref, libroRaw, texto, clozeRaw, tema] = parts;
-    const cloze = clozeRaw || texto;
-    if (!ref || !texto) {
-      html += `<div class="batch-item"><span>Línea ${i+1}</span><span class="batch-err">❌ Referencia o texto vacío</span></div>`;
-      return;
-    }
-    if (cloze && !cloze.includes('{{c1::')) {
-      html += `<div class="batch-item"><span>${ref}</span><span class="batch-err">⚠️ Cloze sin {{c1::}} — guardado sin cloze</span></div>`;
-    }
-    const duplicate = db.find(v => v.ref.toLowerCase() === ref.toLowerCase());
-    if (duplicate) {
-      html += `<div class="batch-item"><span>${ref}</span><span class="batch-err">⚠️ Ya existe</span></div>`;
-      return;
-    }
-    db.push({
-      id: Date.now() + i,
-      ref,
-      libro: libroRaw || detectBook(ref) || '',
-      texto,
-      cloze: cloze || texto,
-      tema: tema || '',
-      creado: new Date().toISOString()
-    });
-    ok++;
-    html += `<div class="batch-item"><span>${ref}</span><span class="batch-ok">✅ Guardado</span></div>`;
-  });
-
-  saveDB();
-  renderLibrary();
-  resultDiv.innerHTML = html;
-  resultDiv.classList.add('show');
-  showToast(`✅ ${ok} versículos guardados de ${lines.length}`);
-}
-
-// ══════════════════════════════
-// BIBLIOTECA
-// ══════════════════════════════
+let selectedIds = new Set();
 function renderLibrary() {
   const q = (document.getElementById('search-box')?.value || '').toLowerCase();
   const list = document.getElementById('verse-list');
@@ -989,23 +1082,92 @@ function renderLibrary() {
 
   if (!filtered.length) {
     list.innerHTML = `<div class="empty-state"><div class="empty-icon">📜</div><p>${db.length ? 'Sin resultados para tu búsqueda' : 'Aún no hay versículos guardados'}</p></div>`;
+    updateSelectionUI();
     return;
   }
   list.innerHTML = filtered.map(v => `
-    <div class="verse-card">
-      <div class="verse-card-header">
-        <div>
-          <div class="verse-ref">${v.ref}</div>
-          <div class="verse-book">${v.libro}</div>
-        </div>
-        <div class="verse-actions">
-          <button class="btn-icon btn-edit" onclick="openEdit(${v.id})" title="Editar">✏️</button>
-          <button class="btn-icon btn-delete" onclick="deleteVerse(${v.id})" title="Eliminar">🗑️</button>
+    <div class="verse-card${selectedIds.has(v.id) ? ' selected' : ''}">
+      <div class="verse-card-main">
+        <input type="checkbox" class="verse-checkbox" ${selectedIds.has(v.id) ? 'checked' : ''} onchange="toggleSelect(${v.id}, this.checked)" title="Seleccionar para exportar">
+        <div class="verse-card-body">
+          <div class="verse-card-header">
+            <div>
+              <div class="verse-ref">${escapeHtml(v.ref)}</div>
+              <div class="verse-book">${escapeHtml(v.libro)}</div>
+            </div>
+            <div class="verse-actions">
+              <button class="btn-icon btn-edit" onclick="openEdit(${v.id})" title="Editar">✏️</button>
+              <button class="btn-icon btn-delete" onclick="deleteVerse(${v.id})" title="Eliminar">🗑️</button>
+            </div>
+          </div>
+          <div class="verse-text-preview">${escapeHtml(v.texto)}</div>
         </div>
       </div>
-      <div class="verse-text-preview">${v.texto}</div>
     </div>
   `).join('');
+  updateSelectionUI();
+}
+
+// ── Selección de versículos para exportar ──
+function toggleSelect(id, checked) {
+  if (checked) selectedIds.add(id); else selectedIds.delete(id);
+  // refrescar solo el estilo/estado sin re-render completo
+  renderLibrary();
+}
+function toggleSelectAll(checked) {
+  const q = (document.getElementById('search-box')?.value || '').toLowerCase();
+  const visibles = db.filter(v =>
+    v.ref.toLowerCase().includes(q) ||
+    v.texto.toLowerCase().includes(q) ||
+    (v.libro||'').toLowerCase().includes(q)
+  );
+  if (checked) visibles.forEach(v => selectedIds.add(v.id));
+  else visibles.forEach(v => selectedIds.delete(v.id));
+  renderLibrary();
+}
+function clearSelection() {
+  selectedIds.clear();
+  renderLibrary();
+}
+// Mantiene íntegra la selección si se elimina un versículo
+function pruneSelection() {
+  const ids = new Set(db.map(v => v.id));
+  selectedIds.forEach(id => { if (!ids.has(id)) selectedIds.delete(id); });
+}
+function updateSelectionUI() {
+  const count = selectedIds.size;
+  const selCount = document.getElementById('sel-count');
+  if (selCount) selCount.textContent = count;
+  // estado del checkbox "seleccionar todos" respecto a lo visible
+  const selectAll = document.getElementById('select-all');
+  if (selectAll) {
+    const q = (document.getElementById('search-box')?.value || '').toLowerCase();
+    const visibles = db.filter(v =>
+      v.ref.toLowerCase().includes(q) ||
+      v.texto.toLowerCase().includes(q) ||
+      (v.libro||'').toLowerCase().includes(q)
+    );
+    const seleccionadosVisibles = visibles.filter(v => selectedIds.has(v.id)).length;
+    selectAll.checked = visibles.length > 0 && seleccionadosVisibles === visibles.length;
+    selectAll.indeterminate = seleccionadosVisibles > 0 && seleccionadosVisibles < visibles.length;
+  }
+  updateExportScope();
+}
+
+// Conjunto que se exportará: los seleccionados, o todos si no hay selección
+function getExportSet() {
+  return selectedIds.size ? db.filter(v => selectedIds.has(v.id)) : db.slice();
+}
+function updateExportScope() {
+  const el = document.getElementById('export-scope');
+  if (!el) return;
+  if (selectedIds.size) {
+    el.textContent = `Se exportarán ${selectedIds.size} versículo${selectedIds.size !== 1 ? 's' : ''} seleccionado${selectedIds.size !== 1 ? 's' : ''}`;
+    el.classList.remove('all');
+  } else {
+    el.textContent = `Se exportarán todos los versículos (${db.length})`;
+    el.classList.add('all');
+  }
 }
 
 // ══════════════════════════════
@@ -1018,7 +1180,7 @@ function openEdit(id) {
   document.getElementById('edit-ref').value   = v.ref;
   document.getElementById('edit-libro').value = v.libro;
   document.getElementById('edit-texto').value = v.texto;
-  document.getElementById('edit-cloze').value = v.cloze;
+  document.getElementById('edit-cloze').innerHTML = clozeToHtml(v.cloze);
   document.getElementById('edit-tema').value  = v.tema || '';
   document.getElementById('edit-cloze-preview').innerHTML = renderClozePreview(v.cloze);
   document.getElementById('edit-modal').classList.add('open');
@@ -1031,13 +1193,19 @@ function saveEdit() {
   if (!editingId) return;
   const idx = db.findIndex(x => x.id === editingId);
   if (idx === -1) return;
-  const cloze = document.getElementById('edit-cloze').value.trim();
-  if (!cloze.includes('{{c1::')) { showToast('⚠️ El cloze debe tener {{c1::palabra}}', true); return; }
+  const ref   = document.getElementById('edit-ref').value.trim();
+  const texto = document.getElementById('edit-texto').value.trim();
+  const cloze = serializeCloze(document.getElementById('edit-cloze')).trim();
+  if (!ref || !texto) { showToast('⚠️ Referencia y texto son obligatorios', true); return; }
+  if (!/\{\{c\d+::/.test(cloze)) { showToast('⚠️ Marca al menos una palabra como cloze (botón 🅱️)', true); return; }
+  // Evitar que la edición deje una referencia duplicada de otro versículo
+  const dup = db.find(v => v.id !== editingId && v.ref.toLowerCase() === ref.toLowerCase());
+  if (dup) { showToast('⚠️ Ya existe otro versículo con esa referencia', true); return; }
   db[idx] = {
     ...db[idx],
-    ref:   document.getElementById('edit-ref').value.trim(),
+    ref,
     libro: document.getElementById('edit-libro').value.trim(),
-    texto: document.getElementById('edit-texto').value.trim(),
+    texto,
     cloze,
     tema:  document.getElementById('edit-tema').value.trim(),
   };
@@ -1051,6 +1219,7 @@ function deleteVerse(id) {
   if (!v) return;
   if (!confirm(`¿Eliminar "${v.ref}"?`)) return;
   db = db.filter(x => x.id !== id);
+  selectedIds.delete(id);
   saveDB();
   renderLibrary();
   showToast('🗑️ Versículo eliminado');
@@ -1060,7 +1229,8 @@ function deleteVerse(id) {
 // EXPORTAR ANKI
 // ══════════════════════════════
 function ankiHeader(campos) {
-  return `#separator:tab\n#html:false\n#campos: ${campos}\n`;
+  // html:true => Anki interpreta los <br> como saltos de línea reales (poesía/Salmos)
+  return `#separator:tab\n#html:true\n#campos: ${campos}\n`;
 }
 function downloadTxt(filename, content) {
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -1068,25 +1238,30 @@ function downloadTxt(filename, content) {
   a.download = filename; a.click(); URL.revokeObjectURL(a.href);
 }
 function exportTipoA() {
-  if (!db.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
-  const lines = db.map(v => `${v.ref}\t${v.libro}\t${v.texto}\t${v.tema||''}\t\tTipoA`);
+  const set = getExportSet();
+  if (!set.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
+  // El Tipo va en el campo Tags (5ª columna) para tu organización de mazos
+  const lines = set.map(v => [v.ref, v.libro, v.texto, v.tema||'', 'TipoA', 'TipoA'].map(sanitizeField).join('\t'));
   downloadTxt('TipoA_Referencia_a_Texto.txt', ankiHeader('Referencia, Libro, Versiculo, Tema, Tags, TipoNota') + lines.join('\n'));
-  showToast('📄 Tipo A exportado (' + db.length + ' tarjetas)');
+  showToast('📄 Tipo A exportado (' + set.length + ' tarjetas)');
 }
 function exportTipoB() {
-  if (!db.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
-  const lines = db.map(v => `${v.texto}\t${v.ref}\t${v.libro}\t${v.tema||''}\t\tTipoB`);
+  const set = getExportSet();
+  if (!set.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
+  const lines = set.map(v => [v.texto, v.ref, v.libro, v.tema||'', 'TipoB', 'TipoB'].map(sanitizeField).join('\t'));
   downloadTxt('TipoB_Texto_a_Referencia.txt', ankiHeader('Versiculo, Referencia, Libro, Tema, Tags, TipoNota') + lines.join('\n'));
-  showToast('📄 Tipo B exportado (' + db.length + ' tarjetas)');
+  showToast('📄 Tipo B exportado (' + set.length + ' tarjetas)');
 }
 function exportTipoC() {
-  if (!db.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
-  const lines = db.map(v => `${v.cloze}\t${v.ref}\t${v.libro}\t${v.tema||''}\tTipoC`);
-  downloadTxt('TipoC_Cloze.txt', ankiHeader('Texto, Referencia, Libro, Tags, TipoNota') + lines.join('\n'));
-  showToast('📄 Tipo C exportado (' + db.length + ' tarjetas)');
+  const conCloze = getExportSet().filter(v => /\{\{c\d+::/.test(v.cloze||''));
+  if (!conCloze.length) { showToast('⚠️ No hay versículos con cloze válido para exportar', true); return; }
+  const lines = conCloze.map(v => [v.cloze, v.ref, v.libro, v.tema||'', 'TipoC', 'TipoC'].map(sanitizeField).join('\t'));
+  downloadTxt('TipoC_Cloze.txt', ankiHeader('Texto, Referencia, Libro, Tema, Tags, TipoNota') + lines.join('\n'));
+  const cards = conCloze.reduce((n, v) => n + clozeCardCount(v.cloze), 0);
+  showToast('📄 Tipo C exportado (' + cards + ' tarjetas de ' + conCloze.length + ' versículos)');
 }
 function exportAll() {
-  if (!db.length) { showToast('⚠️ No hay versículos para exportar', true); return; }
+  if (!getExportSet().length) { showToast('⚠️ No hay versículos para exportar', true); return; }
   setTimeout(exportTipoA, 0);
   setTimeout(exportTipoB, 400);
   setTimeout(exportTipoC, 800);
@@ -1114,12 +1289,29 @@ function handleImport(e) {
       const data = JSON.parse(ev.target.result);
       const verses = data.versiculos || data;
       if (!Array.isArray(verses)) throw new Error('Formato inválido');
-      let added = 0;
-      verses.forEach(v => {
-        if (!db.find(x => x.ref === v.ref)) { db.push(v); added++; }
+      let added = 0, invalidos = 0;
+      verses.forEach((v, i) => {
+        // Validar y normalizar cada versículo importado
+        if (!v || typeof v !== 'object' || !v.ref || !v.texto) { invalidos++; return; }
+        const ref = String(v.ref).trim();
+        if (db.find(x => (x.ref||'').toLowerCase() === ref.toLowerCase())) return; // duplicado
+        // Garantizar id único (evita colisiones al editar/eliminar)
+        let id = Number(v.id);
+        if (!id || db.find(x => x.id === id)) id = Date.now() + i;
+        db.push({
+          id,
+          ref,
+          libro: String(v.libro || detectBook(ref) || '').trim(),
+          texto: String(v.texto).trim(),
+          cloze: String(v.cloze || v.texto).trim(),
+          tema: String(v.tema || '').trim(),
+          creado: v.creado || new Date().toISOString()
+        });
+        added++;
       });
       saveDB(); renderLibrary();
-      showToast(`📂 ${added} versículos importados (${verses.length - added} duplicados omitidos)`);
+      const omitidos = verses.length - added - invalidos;
+      showToast(`📂 ${added} importados${omitidos ? `, ${omitidos} duplicados` : ''}${invalidos ? `, ${invalidos} inválidos` : ''}`);
     } catch(err) { showToast('❌ Error al leer el JSON: ' + err.message, true); }
   };
   reader.readAsText(file);
@@ -1129,13 +1321,24 @@ function handleImport(e) {
 // ══════════════════════════════
 // STATS Y UI
 // ══════════════════════════════
+// Cuenta cuántas tarjetas Cloze generará un versículo = nº de clozes distintos (c1, c2…)
+function clozeCardCount(str) {
+  const nums = new Set();
+  (String(str||'').match(/\{\{c(\d+)::/g) || []).forEach(m => nums.add(m));
+  return nums.size;
+}
 function updateStats() {
+  let clozeCards = 0;
+  db.forEach(v => clozeCards += clozeCardCount(v.cloze));
   document.getElementById('stat-total').textContent = db.length;
-  document.getElementById('stat-cards').textContent = db.length * 3;
+  // TipoA + TipoB (uno por versículo) + TipoC (una tarjeta por cada cloze)
+  document.getElementById('stat-cards').textContent = db.length * 2 + clozeCards;
+  pruneSelection();
+  updateExportScope();
 }
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach((t,i) => {
-    const names = ['agregar','batch','biblioteca'];
+    const names = ['agregar','biblioteca'];
     t.classList.toggle('active', names[i] === name);
   });
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -1152,6 +1355,10 @@ function showToast(msg, error = false) {
 // Cerrar modal al hacer click fuera
 document.getElementById('edit-modal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
+});
+// Cerrar modal con la tecla Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('edit-modal').classList.contains('open')) closeModal();
 });
 </script>
 </body>
