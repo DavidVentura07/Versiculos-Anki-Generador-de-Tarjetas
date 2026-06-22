@@ -330,6 +330,31 @@ main {
   outline: none; transition: border-color 0.2s;
 }
 .search-box:focus { border-color: var(--sage); }
+/* ── FILTROS BIBLIOTECA ── */
+.library-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px; margin-bottom: 14px;
+}
+.filter-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.filter-field label {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--muted);
+}
+.filter-select {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px; color: var(--ink);
+  background: var(--cream);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  cursor: pointer; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+.filter-select:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(82,183,136,0.12); background: #fff; }
+@media (max-width: 520px) { .library-filters { grid-template-columns: 1fr; } }
 .library-count {
   font-size: 12px; color: var(--muted);
   white-space: nowrap; font-weight: 600;
@@ -661,6 +686,43 @@ main {
             <input type="text" class="search-box" id="search-box" placeholder="Buscar por referencia o texto..." oninput="renderLibrary()">
             <span class="library-count" id="lib-count">0 versículos</span>
           </div>
+          <div class="library-filters">
+            <div class="filter-field">
+              <label for="filter-group">Grupo</label>
+              <select id="filter-group" class="filter-select" onchange="onGroupChange()">
+                <option value="">Todos los grupos</option>
+                <optgroup label="Antiguo Testamento">
+                  <option value="Pentateuco">Pentateuco (Torá)</option>
+                  <option value="Históricos AT">Históricos</option>
+                  <option value="Poéticos">Poéticos / Sapienciales</option>
+                  <option value="Profetas Mayores">Profetas Mayores</option>
+                  <option value="Profetas Menores">Profetas Menores</option>
+                </optgroup>
+                <optgroup label="Nuevo Testamento">
+                  <option value="Evangelios">Evangelios</option>
+                  <option value="Históricos NT">Hechos</option>
+                  <option value="Cartas de Pablo">Cartas de Pablo</option>
+                  <option value="Cartas Generales">Cartas Generales</option>
+                  <option value="Apocalíptico">Apocalipsis</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label for="filter-book">Libro</label>
+              <select id="filter-book" class="filter-select" onchange="renderLibrary()">
+                <option value="">Todos los libros</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label for="filter-sort">Ordenar</label>
+              <select id="filter-sort" class="filter-select" onchange="renderLibrary()">
+                <option value="recientes">🆕 Recientes primero</option>
+                <option value="antiguos">Más antiguos</option>
+                <option value="biblico">Orden bíblico</option>
+                <option value="alfabetico">Referencia A–Z</option>
+              </select>
+            </div>
+          </div>
           <div class="library-select-bar">
             <label><input type="checkbox" id="select-all" class="verse-checkbox" onchange="toggleSelectAll(this.checked)"> Seleccionar todos</label>
             <span><span class="sel-count" id="sel-count">0</span> seleccionados · <button class="btn-sel-clear" onclick="clearSelection()">limpiar</button></span>
@@ -964,6 +1026,35 @@ function tagsFor(v, tipo) {
   return [bookTag(v.ref), tipo].filter(Boolean).join(' ');
 }
 
+// ══════════════════════════════
+// GRUPOS CANÓNICOS + ORDEN BÍBLICO
+// Cada libro (nombre completo, igual que v.libro) pertenece a un grupo.
+// El orden del array define el "orden bíblico" para ordenar la biblioteca.
+// ══════════════════════════════
+const BOOK_GROUPS = [
+  // ── Antiguo Testamento ──
+  ['Pentateuco', ['Libro de Génesis','Libro de Éxodo','Libro de Levítico','Libro de Números','Libro de Deuteronomio']],
+  ['Históricos AT', ['Libro de Josué','Libro de Jueces','Libro de Rut','1er Libro de Samuel','2do Libro de Samuel','1er Libro de Reyes','2do Libro de Reyes','1er Libro de las Crónicas','2do Libro de las Crónicas','Libro de Esdras','Libro de Nehemías','Libro de Ester']],
+  ['Poéticos', ['Libro de Job','Libro de los Salmos','Libro de los Proverbios','Libro de Eclesiastés','Cantares de Salomón']],
+  ['Profetas Mayores', ['Libro del Profeta Isaías','Libro del Profeta Jeremías','Libro de Lamentaciones','Libro del Profeta Ezequiel','Libro del Profeta Daniel']],
+  ['Profetas Menores', ['Libro del Profeta Oseas','Libro del Profeta Joel','Libro del Profeta Amós','Libro del Profeta Abdías','Libro del Profeta Jonás','Libro del Profeta Miqueas','Libro del Profeta Nahúm','Libro del Profeta Habacuc','Libro del Profeta Sofonías','Libro del Profeta Hageo','Libro del Profeta Zacarías','Libro del Profeta Malaquías']],
+  // ── Nuevo Testamento ──
+  ['Evangelios', ['Evangelio de Mateo','Evangelio de Marcos','Evangelio de Lucas','Evangelio de Juan']],
+  ['Históricos NT', ['Hechos de los Apóstoles']],
+  ['Cartas de Pablo', ['Carta de Pablo a los Romanos','1ra Carta de Pablo a los Corintios','2da Carta de Pablo a los Corintios','Carta de Pablo a los Gálatas','Carta de Pablo a los Efesios','Carta de Pablo a los Filipenses','Carta de Pablo a los Colosenses','1ra Carta de Pablo a los Tesalonicenses','2da Carta de Pablo a los Tesalonicenses','1ra Carta de Pablo a Timoteo','2da Carta de Pablo a Timoteo','Carta de Pablo a Tito','Carta de Pablo a Filemón']],
+  ['Cartas Generales', ['Carta a los Hebreos','Carta de Santiago','1ra Carta de Pedro','2da Carta de Pedro','1ra Carta de Juan','2da Carta de Juan','3ra Carta de Juan','Carta de Judas']],
+  ['Apocalíptico', ['Libro del Apocalipsis']],
+];
+// Mapas derivados: libro → grupo, y libro → índice canónico (0..65)
+const BOOK_GROUP = {};
+const CANON_ORDER = {};
+(function buildBookIndexes() {
+  let i = 0;
+  BOOK_GROUPS.forEach(([group, books]) => {
+    books.forEach(name => { BOOK_GROUP[name] = group; CANON_ORDER[name] = i++; });
+  });
+})();
+
 function autoBook() {
   const ref = document.getElementById('inp-ref').value;
   const libro = document.getElementById('inp-libro');
@@ -1152,18 +1243,69 @@ function clearForm() {
 // BIBLIOTECA + SELECCIÓN
 // ══════════════════════════════
 let selectedIds = new Set();
+
+// Devuelve los versículos visibles según búsqueda + grupo + libro, ya ordenados.
+function getVisibleVerses() {
+  const q     = (document.getElementById('search-box')?.value || '').toLowerCase().trim();
+  const group = document.getElementById('filter-group')?.value || '';
+  const book  = document.getElementById('filter-book')?.value  || '';
+  const sort  = document.getElementById('filter-sort')?.value  || 'recientes';
+
+  const arr = db.filter(v => {
+    const matchQ = !q ||
+      v.ref.toLowerCase().includes(q) ||
+      v.texto.toLowerCase().includes(q) ||
+      (v.libro||'').toLowerCase().includes(q);
+    const matchGroup = !group || BOOK_GROUP[v.libro] === group;
+    const matchBook  = !book  || v.libro === book;
+    return matchQ && matchGroup && matchBook;
+  });
+
+  arr.sort((a, b) => {
+    switch (sort) {
+      case 'antiguos':   return a.id - b.id;
+      case 'alfabetico': return a.ref.localeCompare(b.ref, 'es', { numeric: true, sensitivity: 'base' });
+      case 'biblico': {
+        const ia = CANON_ORDER[a.libro] ?? 999, ib = CANON_ORDER[b.libro] ?? 999;
+        return ia !== ib ? ia - ib : b.id - a.id;
+      }
+      case 'recientes':
+      default:           return b.id - a.id; // más nuevos (id = timestamp) primero
+    }
+  });
+  return arr;
+}
+
+// Rellena el desplegable de libros solo con los que existen en la BD,
+// acotados al grupo elegido y en orden bíblico. Conserva la selección si sigue válida.
+function populateBookFilter() {
+  const sel = document.getElementById('filter-book');
+  if (!sel) return;
+  const group = document.getElementById('filter-group')?.value || '';
+  const prev = sel.value;
+  const present = [...new Set(
+    db.map(v => v.libro).filter(name => name && (!group || BOOK_GROUP[name] === group))
+  )].sort((a, b) => (CANON_ORDER[a] ?? 999) - (CANON_ORDER[b] ?? 999) || a.localeCompare(b, 'es'));
+
+  sel.innerHTML = '<option value="">Todos los libros</option>' +
+    present.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+  sel.value = present.includes(prev) ? prev : '';
+}
+
+// Al cambiar el grupo, reconstruye el filtro de libros acotado a ese grupo.
+function onGroupChange() {
+  populateBookFilter();
+  renderLibrary();
+}
+
 function renderLibrary() {
-  const q = (document.getElementById('search-box')?.value || '').toLowerCase();
+  populateBookFilter();
   const list = document.getElementById('verse-list');
-  const filtered = db.filter(v =>
-    v.ref.toLowerCase().includes(q) ||
-    v.texto.toLowerCase().includes(q) ||
-    (v.libro||'').toLowerCase().includes(q)
-  );
+  const filtered = getVisibleVerses();
   document.getElementById('lib-count').textContent = filtered.length + ' versículo' + (filtered.length !== 1 ? 's' : '');
 
   if (!filtered.length) {
-    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📜</div><p>${db.length ? 'Sin resultados para tu búsqueda' : 'Aún no hay versículos guardados'}</p></div>`;
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📜</div><p>${db.length ? 'Sin resultados para tu búsqueda o filtro' : 'Aún no hay versículos guardados'}</p></div>`;
     updateSelectionUI();
     return;
   }
@@ -1197,12 +1339,7 @@ function toggleSelect(id, checked) {
   renderLibrary();
 }
 function toggleSelectAll(checked) {
-  const q = (document.getElementById('search-box')?.value || '').toLowerCase();
-  const visibles = db.filter(v =>
-    v.ref.toLowerCase().includes(q) ||
-    v.texto.toLowerCase().includes(q) ||
-    (v.libro||'').toLowerCase().includes(q)
-  );
+  const visibles = getVisibleVerses();
   if (checked) visibles.forEach(v => selectedIds.add(v.id));
   else visibles.forEach(v => selectedIds.delete(v.id));
   renderLibrary();
@@ -1223,12 +1360,7 @@ function updateSelectionUI() {
   // estado del checkbox "seleccionar todos" respecto a lo visible
   const selectAll = document.getElementById('select-all');
   if (selectAll) {
-    const q = (document.getElementById('search-box')?.value || '').toLowerCase();
-    const visibles = db.filter(v =>
-      v.ref.toLowerCase().includes(q) ||
-      v.texto.toLowerCase().includes(q) ||
-      (v.libro||'').toLowerCase().includes(q)
-    );
+    const visibles = getVisibleVerses();
     const seleccionadosVisibles = visibles.filter(v => selectedIds.has(v.id)).length;
     selectAll.checked = visibles.length > 0 && seleccionadosVisibles === visibles.length;
     selectAll.indeterminate = seleccionadosVisibles > 0 && seleccionadosVisibles < visibles.length;
